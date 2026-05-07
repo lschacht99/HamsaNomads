@@ -2,108 +2,183 @@ from __future__ import annotations
 
 import asyncio
 import os
-import sys
+import shutil
 from pathlib import Path
 
 from telegram import Update
 from telegram.ext import Application, CommandHandler, ContextTypes, MessageHandler, filters
 
-from .cli import CAPTION_STYLES, INPUT_DIR, OUTPUT_DIR
-
-TOKEN_ENV_VAR = "HAMSA_TELEGRAM_BOT_TOKEN"
-DEFAULT_STYLE = "hamsa-clean"
-COMMAND_STYLES = {
+ROOT = Path.cwd()
+INPUT_VIDEO = ROOT / "input" / "test.mp4"
+TRANSCRIPT_FILE = ROOT / "transcript.txt"
+OUTPUT_DIR = ROOT / "output"
+FINAL_VIDEO = OUTPUT_DIR / "final_video.mp4"
+CAPTIONED_VIDEO = OUTPUT_DIR / "captioned_vertical.mp4"
+THUMBNAIL = OUTPUT_DIR / "thumbnail.jpg"
+LOG_DIR = ROOT / "logs"
+BOT_RENDER_LOG = LOG_DIR / "bot_render.log"
+TOKEN_ENV_VAR = "TELEGRAM_BOT_TOKEN"
+STYLE_COMMANDS = {
     "game": "game",
     "paris": "paris-tip",
     "clean": "hamsa-clean",
-    "wrongright": "wrong-vs-right",
-    "dialogue": "video-game-dialogue",
 }
 RENDER_LOCK = asyncio.Lock()
 
 
-def selected_style(context: ContextTypes.DEFAULT_TYPE) -> str:
-    style = context.user_data.get("style", DEFAULT_STYLE)
-    if style not in CAPTION_STYLES:
-        return DEFAULT_STYLE
-    return style
-
-
-def safe_job_name(update: Update) -> str:
-    chat_id = update.effective_chat.id if update.effective_chat else "chat"
-    message_id = update.effective_message.message_id if update.effective_message else "message"
-    return f"telegram_{chat_id}_{message_id}"
+def load_dotenv(path: Path = ROOT / ".env") -> None:
+    if not path.exists():
+        return
+    for raw_line in path.read_text(encoding="utf-8").splitlines():
+        line = raw_line.strip()
+        if not line or line.startswith("#") or "=" not in line:
+            continue
+        key, value = line.split("=", 1)
+        os.environ.setdefault(key.strip(), value.strip().strip('"').strip("'"))
 
 
 def help_text() -> str:
     return "\n".join(
         [
-            "Send me an MP4/video and I will caption it locally.",
+            "Send me an MP4/video and I will render a Hamsa-caption video locally.",
             "",
-            "Choose a style first:",
-            "/game - bold gaming captions",
-            "/paris - Paris tip style",
-            "/clean - clean Hamsa style",
-            "/wrongright - wrong vs right captions",
-            "/dialogue - video game dialogue box",
+            "Steps:",
+            "1. Send a video file or MP4 document.",
+            "2. Send transcript text, or send /render to use transcript.txt.",
+            "3. Choose /game, /paris, or /clean.",
             "",
-            "No paid APIs are used. Rendering runs on this PC.",
+            "Commands: /start /help /game /paris /clean /status /render",
+            "No paid APIs are used.",
         ]
     )
 
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    context.user_data["style"] = selected_style(context)
+    context.user_data.setdefault("style", "hamsa-clean")
     await update.effective_message.reply_text(help_text())
 
 
-async def set_style(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    command = update.effective_message.text.split()[0].lstrip("/").lower().split("@", 1)[0]
-    style = COMMAND_STYLES[command]
-    context.user_data["style"] = style
-    await update.effective_message.reply_text(
-        f"Style set to {style}. Now send me one MP4/video."
-    )
+async def status(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    style = context.user_data.get("style", "hamsa-clean")
+    lines = [
+        f"Video: {'yes' if INPUT_VIDEO.exists() else 'missing'} ({INPUT_VIDEO})",
+        f"Transcript: {'yes' if TRANSCRIPT_FILE.exists() else 'missing'} ({TRANSCRIPT_FILE})",
+        f"Style: {style}",
+        f"Final video: {'yes' if FINAL_VIDEO.exists() else 'not rendered yet'}",
+    ]
+    await update.effective_message.reply_text("\n".join(lines))
 
 
 def video_attachment(update: Update):
     message = update.effective_message
     if message.video:
         return message.video
-    if message.document and message.document.mime_type:
-        if message.document.mime_type.startswith("video/"):
+    if message.document:
+        name = message.document.file_name or ""
+        mime = message.document.mime_type or ""
+        if name.lower().endswith(".mp4") or mime.startswith("video/"):
             return message.document
     return None
 
 
-async def run_caption_engine(source_video: Path, output_dir: Path, style: str) -> tuple[int, str]:
+async def handle_video(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    attachment = video_attachment(update)
+    if not attachment:
+        await update.effective_message.reply_text("Please send a video file or MP4 document.")
+        return
+
+    INPUT_VIDEO.parent.mkdir(parents=True, exist_ok=True)
+    telegram_file = await attachment.get_file()
+    await telegram_file.download_to_drive(custom_path=INPUT_VIDEO)
+    context.user_data["video_received"] = True
+    await update.effective_message.reply_text(
+        "Video received. Now send me the transcript text, or send /render to use transcript.txt."
+    )
+
+
+async def handle_transcript_text(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    if not INPUT_VIDEO.exists() and not context.user_data.get("video_received"):
+        await update.effective_message.reply_text("Send me input video first, then send transcript text.")
+        return
+
+    text = update.effective_message.text.strip()
+    if not text:
+        await update.effective_message.reply_text("Transcript text was empty. Please send transcript text again.")
+        return
+
+    TRANSCRIPT_FILE.write_text(text + "\n", encoding="utf-8")
+    context.user_data["transcript_ready"] = True
+    await update.effective_message.reply_text("Choose style: /game, /paris, or /clean.")
+
+
+async def render_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    if not INPUT_VIDEO.exists():
+        await update.effective_message.reply_text("I need a video first. Send a video file or MP4 document.")
+        return
+    if not TRANSCRIPT_FILE.exists():
+        await update.effective_message.reply_text("I could not find transcript.txt. Send transcript text first.")
+        return
+    context.user_data["transcript_ready"] = True
+    await update.effective_message.reply_text("Choose style: /game, /paris, or /clean.")
+
+
+async def set_style(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    command = update.effective_message.text.split()[0].lstrip("/").lower().split("@", 1)[0]
+    style = STYLE_COMMANDS[command]
+    context.user_data["style"] = style
+
+    if not INPUT_VIDEO.exists():
+        await update.effective_message.reply_text(f"Style set to {style}. Now send me a video file or MP4 document.")
+        return
+    if not TRANSCRIPT_FILE.exists():
+        await update.effective_message.reply_text(f"Style set to {style}. Now send transcript text, or send /render to use transcript.txt.")
+        return
+
+    await render_current_job(update, style)
+
+
+async def run_render(style: str) -> tuple[int, str]:
+    OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+    LOG_DIR.mkdir(parents=True, exist_ok=True)
+    for stale_output in (FINAL_VIDEO, CAPTIONED_VIDEO, THUMBNAIL):
+        if stale_output.exists():
+            stale_output.unlink()
     cmd = [
-        sys.executable,
+        "py",
+        "-3.11",
         "-m",
         "hamsa_caption_engine",
         "--input",
-        str(source_video),
+        r"input\test.mp4",
         "--output-dir",
-        str(output_dir),
+        "output",
         "--style",
         style,
-        "--model",
-        "tiny.en",
-        "--video-name",
-        "final_video.mp4",
+        "--transcript",
+        "transcript.txt",
+        "--thumbnail-at",
+        "00:00:01",
     ]
     process = await asyncio.create_subprocess_exec(
         *cmd,
         stdout=asyncio.subprocess.PIPE,
         stderr=asyncio.subprocess.STDOUT,
+        cwd=ROOT,
     )
     stdout, _stderr = await process.communicate()
-    return process.returncode or 0, stdout.decode(errors="replace")
+    log_text = stdout.decode(errors="replace")
+    BOT_RENDER_LOG.write_text("$ " + " ".join(cmd) + "\n" + log_text, encoding="utf-8")
+    return process.returncode or 0, log_text
 
 
-async def send_output_file(
-    update: Update, path: Path, *, filename: str, caption: str | None = None
-) -> None:
+def ensure_final_video_name() -> None:
+    if FINAL_VIDEO.exists():
+        return
+    if CAPTIONED_VIDEO.exists():
+        shutil.copy2(CAPTIONED_VIDEO, FINAL_VIDEO)
+
+
+async def send_document(update: Update, path: Path, filename: str, caption: str) -> None:
     with path.open("rb") as file_obj:
         await update.effective_message.reply_document(
             document=file_obj,
@@ -112,69 +187,49 @@ async def send_output_file(
         )
 
 
-async def handle_video(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    attachment = video_attachment(update)
-    if not attachment:
-        await update.effective_message.reply_text(
-            "Please send an MP4/video file, or choose a style with /clean first."
-        )
-        return
-
-    style = selected_style(context)
-    job_name = safe_job_name(update)
-    INPUT_DIR.mkdir(parents=True, exist_ok=True)
-    OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
-    source_video = INPUT_DIR / f"{job_name}.mp4"
-    output_dir = OUTPUT_DIR / job_name
-    output_dir.mkdir(parents=True, exist_ok=True)
-
-    await update.effective_message.reply_text(
-        f"Downloading your video and rendering with style: {style}. This can take a while on a weak PC."
-    )
-    telegram_file = await attachment.get_file()
-    await telegram_file.download_to_drive(custom_path=source_video)
-
+async def render_current_job(update: Update, style: str) -> None:
+    await update.effective_message.reply_text(f"Rendering with {style}. This can take a few minutes on a weak PC.")
     async with RENDER_LOCK:
-        return_code, log_text = await run_caption_engine(source_video, output_dir, style)
+        return_code, _log_text = await run_render(style)
 
     if return_code != 0:
-        short_log = log_text[-3500:] if log_text else "No log output."
         await update.effective_message.reply_text(
-            "Render failed. Check Python, FFmpeg, and faster-whisper setup.\n\n"
-            f"Last log lines:\n{short_log}"
+            f"Render failed. Full logs were saved to {BOT_RENDER_LOG}."
         )
         return
 
-    final_video = output_dir / "final_video.mp4"
-    thumbnail = output_dir / "thumbnail.jpg"
-    edit_plan = output_dir / "edit_plan.json"
-    missing = [path.name for path in [final_video, thumbnail, edit_plan] if not path.exists()]
-    if missing:
+    ensure_final_video_name()
+    if not FINAL_VIDEO.exists():
         await update.effective_message.reply_text(
-            "Render finished, but these files were missing: " + ", ".join(missing)
+            f"Render finished, but I could not find {FINAL_VIDEO}. Full logs were saved to {BOT_RENDER_LOG}."
         )
         return
 
-    await send_output_file(update, final_video, filename="final_video.mp4", caption="Final captioned video")
-    await send_output_file(update, thumbnail, filename="thumbnail.jpg", caption="Thumbnail")
-    await send_output_file(update, edit_plan, filename="edit_plan.json", caption="Edit plan")
+    await send_document(update, FINAL_VIDEO, "final_video.mp4", "Final Hamsa-caption video")
+    if THUMBNAIL.exists():
+        await send_document(update, THUMBNAIL, "thumbnail.jpg", "Thumbnail")
     await update.effective_message.reply_text("Done. Send another video any time.")
 
 
 def build_application(token: str) -> Application:
     application = Application.builder().token(token).build()
-    application.add_handler(CommandHandler(["start", "help"], start))
-    for command in COMMAND_STYLES:
+    application.add_handler(CommandHandler("start", start))
+    application.add_handler(CommandHandler("help", start))
+    application.add_handler(CommandHandler("status", status))
+    application.add_handler(CommandHandler("render", render_command))
+    for command in STYLE_COMMANDS:
         application.add_handler(CommandHandler(command, set_style))
     application.add_handler(MessageHandler(filters.VIDEO | filters.Document.ALL, handle_video))
+    application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_transcript_text))
     return application
 
 
 def main() -> int:
+    load_dotenv()
     token = os.environ.get(TOKEN_ENV_VAR)
     if not token:
         raise SystemExit(
-            f"Missing {TOKEN_ENV_VAR}. Set it to your Telegram bot token before starting the bot."
+            "Missing TELEGRAM_BOT_TOKEN. Create .env with TELEGRAM_BOT_TOKEN=your_token_here."
         )
 
     print("Starting Hamsa Telegram bot. Press Ctrl+C to stop.")

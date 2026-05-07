@@ -114,50 +114,51 @@ output\edit_plan.json
 
 ## Telegram bot use
 
-The Telegram bot is also local: Telegram delivers your video to this PC, then this PC runs the same free `hamsa-caption` engine and sends the rendered files back.
+The Telegram bot works in transcript mode first, so `faster-whisper` is still optional. It uses your local Windows PC, Python, and FFmpeg. No paid APIs are used.
 
-### Telegram setup
+### Create the bot in Telegram
 
-1. In Telegram, message `@BotFather`.
-2. Create a bot and copy the bot token.
-3. Open Command Prompt in this project folder.
-4. Set the token for this window:
+1. Open Telegram and message `@BotFather`.
+2. Send `/newbot`.
+3. Follow BotFather's prompts.
+4. Copy the bot token.
 
-```bat
-set HAMSA_TELEGRAM_BOT_TOKEN=PASTE_YOUR_TOKEN_HERE
+### Create `.env`
+
+In the project root, create a file named `.env`:
+
+```text
+TELEGRAM_BOT_TOKEN=your_token_here
 ```
 
-5. Start the bot:
+The `.env` file is ignored by git so your token is not committed.
+
+### Run the bot on Windows
+
+Double click:
+
+```text
+run_bot.bat
+```
+
+The batch file activates `.venv` if it exists, loads `.env`, and runs:
 
 ```bat
-run_telegram_bot.bat
+py -3.11 -m hamsa_caption_engine.telegram_bot
 ```
 
 Keep that window open while using the bot.
 
-### Telegram commands
+### Use the bot step by step
 
-Send one command to choose the caption style:
+1. Send `/start` or `/help`.
+2. Send a video file or MP4 document. The bot saves it to `input\test.mp4`.
+3. Send transcript text. The bot saves it to `transcript.txt`. You can also send `/render` to use an existing `transcript.txt`.
+4. Choose a style with `/game`, `/paris`, or `/clean`.
+5. The bot runs the same transcript-mode render command used by the one-click runner.
+6. The bot sends back `output\final_video.mp4` and also sends `output\thumbnail.jpg` if it exists.
 
-```text
-/game       game
-/paris      paris-tip
-/clean      hamsa-clean
-/wrongright wrong-vs-right
-/dialogue   video-game-dialogue
-```
-
-Then send an MP4/video to the bot.
-
-The bot saves the video into `input\`, renders it, and sends back:
-
-```text
-final_video.mp4
-thumbnail.jpg
-edit_plan.json
-```
-
-Only one render runs at a time so weak PCs do not get overloaded.
+Use `/status` any time to check whether the bot sees the video, transcript, selected style, and final output. If rendering fails, the bot sends a simple error and saves full logs to `logs\bot_render.log`.
 
 ## Transcript mode
 
