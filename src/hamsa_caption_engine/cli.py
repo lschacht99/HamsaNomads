@@ -19,6 +19,7 @@ OUTPUT_DIR = ROOT / "output"
 REMOTION_DIR = ROOT / "remotion"
 VIDEO_WIDTH = 1080
 VIDEO_HEIGHT = 1920
+SUPPORTED_RENDERERS = ("ffmpeg", "remotion")
 
 
 @dataclass
@@ -653,7 +654,7 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--brand", default="hamsa", help="Brand system to use. Default: hamsa")
     parser.add_argument("--prompt", help="Local prompt used to draft edit_recipe.json before rendering.")
     parser.add_argument("--recipe", type=Path, help="Path to a custom edit_recipe.json to render from.")
-    parser.add_argument("--renderer", choices=["ffmpeg", "remotion"], help="Renderer override. Default comes from recipe, or ffmpeg.")
+    parser.add_argument("--renderer", choices=SUPPORTED_RENDERERS, help="Renderer override. Default comes from recipe, or ffmpeg.")
     parser.add_argument("--intro-card", help="Optional branded title card text for the first 1.5 seconds.")
     parser.add_argument("--model", default="tiny.en", help="faster-whisper model size. Use tiny.en/base.en on weak PCs.")
     parser.add_argument("--language", default="en", help="Spoken language code, or 'auto'. Default: en")
@@ -716,7 +717,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     if args.renderer:
         recipe.renderer = args.renderer
     renderer = recipe.renderer or "ffmpeg"
-    if renderer not in {"ffmpeg", "remotion"}:
+    if renderer not in SUPPORTED_RENDERERS:
         raise SystemExit(f"Unsupported renderer: {renderer}. Use ffmpeg or remotion.")
     ffmpeg = require_binary("ffmpeg") if renderer == "ffmpeg" else shutil.which("ffmpeg")
 

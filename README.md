@@ -255,7 +255,7 @@ If Node/Remotion is not installed or the PC is too weak, use the default FFmpeg 
 .\.venv\Scripts\python.exe -m hamsa_caption_engine --input input\test.mp4 --recipe examples\recipes\wrong_vs_right_chamour.json --renderer ffmpeg
 ```
 
-No paid APIs are used in either renderer. Remotion mode is simply the more designed local renderer; FFmpeg mode remains the lightweight fallback.
+No paid APIs are used in either renderer. Remotion mode is simply the more designed local renderer; FFmpeg mode remains the lightweight fallback. Python dependencies stay in `pyproject.toml` and `requirements.txt`; Remotion dependencies stay in `remotion/package.json` and are installed separately with `npm install`.
 
 ## Brand Identity
 
