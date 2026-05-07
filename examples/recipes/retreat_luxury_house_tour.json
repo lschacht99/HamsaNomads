@@ -1,0 +1,63 @@
+{
+  "project_title": "A Quiet Jewish Retreat House",
+  "video_goal": "Make the house tour feel calm, premium, grounded, and inviting for a Jewish travel retreat.",
+  "style": "hamsa-clean",
+  "tone": "calm, premium, documentary, grounded",
+  "brand": "hamsa",
+  "intro_card": {
+    "enabled": true,
+    "title": "A Quiet Jewish Retreat House",
+    "label": "HAMSA NOMADS RETREAT",
+    "duration_seconds": 1.5
+  },
+  "captions": [],
+  "overlays": [
+    {
+      "start": 2.0,
+      "end": 5.0,
+      "text": "room to breathe",
+      "kind": "travel-note"
+    }
+  ],
+  "keyword_highlights": [
+    "luxury",
+    "retreat",
+    "house tour"
+  ],
+  "zooms": [
+    {
+      "start": 0.5,
+      "end": 3.5,
+      "scale": 1.03,
+      "anchor": "center"
+    },
+    {
+      "start": 5.0,
+      "end": 8.0,
+      "scale": 1.02,
+      "anchor": "center"
+    }
+  ],
+  "screenshots": [
+    {
+      "timestamp": "00:00:03",
+      "label": "wide room moment"
+    }
+  ],
+  "thumbnail": {
+    "timestamp": "00:00:03",
+    "title": "Quiet Retreat House"
+  },
+  "cta": {
+    "text": "Follow Hamsa Nomads for grounded Jewish retreat ideas.",
+    "start": null
+  },
+  "output_settings": {
+    "width": 1080,
+    "height": 1920,
+    "video_name": "captioned_vertical.mp4",
+    "thumbnail_name": "thumbnail.jpg",
+    "duration_seconds": 30.0
+  },
+  "renderer": "ffmpeg"
+}
