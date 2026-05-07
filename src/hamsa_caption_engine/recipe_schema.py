@@ -12,7 +12,7 @@ DEFAULT_RECIPE: dict[str, Any] = {
     "output": {"width": 1080, "height": 1920, "fps": 30, "duration_sec": 25, "format": "mp4"},
     "input_video": {"src": "", "crop": "vertical_center_face", "remove_silence": False},
     "style": {"name": "hamsa-clean", "tone": "warm, human, grounded, documentary", "brand_identity": "hamsa_nomads"},
-    "logo": {"enabled": True, "position": "top_center", "watermark": False, "path": "assets/brand/hamsa-logo.png"},
+    "logo": {"enabled": True, "position": "top_center", "watermark": False, "path": "assets/brand/hamsa-logo.png", "fallback_text": "Hamsa Nomads"},
     "transcription": {"mode": "auto", "model": "base", "language": "auto"},
     "auto_cut": {
         "enabled": False,
@@ -22,7 +22,8 @@ DEFAULT_RECIPE: dict[str, Any] = {
     },
     "intro_card": {
         "enabled": True,
-        "duration_sec": 1.8,
+        "style": "premium_editorial",
+        "duration_sec": 1.5,
         "label": "HAMSA NOMADS",
         "headline": "Jewish travel note",
         "subheadline": "Warm local context for your next trip",
@@ -33,6 +34,7 @@ DEFAULT_RECIPE: dict[str, Any] = {
         "position": "lower_third",
         "max_words_per_caption": 6,
         "box_style": "parchment",
+        "theme": "premium",
         "highlight_keywords": [],
         "keyword_highlights": [],
     },

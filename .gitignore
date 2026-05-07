@@ -16,3 +16,5 @@ tools/ffmpeg/*.zip
 tools/ffmpeg/_extract/
 remotion/node_modules/
 remotion/out/
+remotion/public/runtime/*
+!remotion/public/runtime/.gitkeep

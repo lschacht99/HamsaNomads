@@ -23,7 +23,8 @@
     "enabled": true,
     "position": "top_center",
     "watermark": false,
-    "path": "assets/brand/hamsa-logo.png"
+    "path": "assets/brand/hamsa-logo.png",
+    "fallback_text": "Hamsa Nomads"
   },
   "transcription": {
     "mode": "auto",
@@ -38,6 +39,7 @@
   },
   "intro_card": {
     "enabled": true,
+    "style": "premium_editorial",
     "duration_sec": 1.8,
     "label": "HAMSA NOMADS",
     "headline": "Make this a clean warm Hamsa Nomads Jewish trave",
@@ -49,6 +51,7 @@
     "position": "lower_third",
     "max_words_per_caption": 6,
     "box_style": "parchment",
+    "theme": "premium",
     "highlight_keywords": [],
     "keyword_highlights": []
   },

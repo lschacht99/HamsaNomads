@@ -17,12 +17,12 @@ def apply_prompt_rules(recipe: dict[str, Any], prompt: str, *, requested_rendere
     if requested_renderer:
         new["renderer"] = requested_renderer
 
-    if _has(lower, "make captions nicer", "professional captions", "premium captions"):
+    if _has(lower, "premium", "elegant", "editorial", "luxury", "clean", "beautiful captions", "more aesthetic", "make it prettier", "more beautiful", "polished", "branded", "make captions nicer", "professional captions", "premium captions"):
         new["style"]["name"] = "hamsa-clean"
-        new["caption_system"].update(type="animated_dialogue_box", box_style="parchment")
+        new["caption_system"].update(type="hamsa-clean", box_style="parchment", theme="premium")
     if _has(lower, "video game", "quest", "rpg", "level", "mission"):
         new["style"]["name"] = "video_game_dialogue"
-        new["caption_system"].update(type="video_game_dialogue", box_style="parchment")
+        new["caption_system"].update(type="video_game_dialogue", box_style="parchment", theme="premium")
         new["intro_card"].update(label="QUEST UNLOCKED", headline="Paris quest", subheadline="A warm travel mission, Hamsa style")
         new["section_cards"] = [{"title": "PARIS QUEST", "start_sec": 1.5, "duration_sec": 0.8}]
         new["transitions"].append({"type": "game_quest_banner_reveal", "start_sec": 1.5, "duration_sec": 0.35})
@@ -49,7 +49,7 @@ def apply_prompt_rules(recipe: dict[str, Any], prompt: str, *, requested_rendere
         new["overlays"].append({"type": "passport_stamp", "start_sec": 3.2, "duration_sec": 0.8, "text": "HAMSA APPROVED"})
         new["freeze_frames"].append({"time_sec": 3.2, "duration_sec": 0.5, "overlay": "Passport stamp moment"})
         new["transitions"].append({"type": "passport_stamp_pop", "start_sec": 3.2, "duration_sec": 0.35})
-    if _has(lower, "premium animation", "animated", "cinematic title"):
+    if _has(lower, "premium animation", "animated", "cinematic title", "designed intro"):
         new["renderer"] = "remotion"
     if _has(lower, "smooth", "cinematic", "premium", "animated"):
         new["renderer"] = "remotion"

@@ -90,6 +90,26 @@ Recommended workflow:
 4. Use `/remotion` for premium animated mode.
 5. If Remotion fails, open `logs/bot_render.log`; it includes full Node/Remotion stdout/stderr, paths, command, Node/npm versions, and logo status.
 
+
+### Remotion Windows asset rule
+
+Remotion must not receive raw `file:///C:/...` Windows paths inside React components. The Python Remotion renderer stages browser-safe runtime assets into:
+
+```text
+remotion/public/runtime/input.mp4
+remotion/public/runtime/hamsa-logo.png
+remotion/public/runtime/edit_recipe.json
+```
+
+React components load those staged assets with `staticFile()`, and video uses `OffthreadVideo`, so local Windows videos and logos do not hit `ERR_UNKNOWN_URL_SCHEME` or `MEDIA_ELEMENT_ERROR` from raw file URLs.
+
+Caption/design source files:
+
+- FFmpeg fast styles: `src/hamsa_caption_engine/ffmpeg_renderer.py`
+- Remotion premium components: `remotion/src/components/`
+- Prompt and recipe logic: `src/hamsa_caption_engine/recipe_builder.py`
+- Brand colors/logo identity: `brand/hamsa_nomads_brand.json`
+
 Example recipe caption design:
 
 ```json
