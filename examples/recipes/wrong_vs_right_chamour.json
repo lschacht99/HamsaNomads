@@ -1,0 +1,54 @@
+{
+  "project_title": "Stop Saying This in France",
+  "video_goal": "Teach the wrong vs right way to ask about Chamour in a warm Jewish travel tone.",
+  "style": "wrong-vs-right",
+  "tone": "clear, funny, helpful, Jewish travel",
+  "brand": "hamsa",
+  "intro_card": {
+    "enabled": true,
+    "title": "Stop Saying This in France",
+    "label": "JEWISH TRAVEL NOTE",
+    "duration_seconds": 1.5
+  },
+  "captions": [
+    {
+      "start": 0.0,
+      "end": 3.0,
+      "text": "❌ Don’t ask: Cholov Yisroel\n✅ Ask: Chamour"
+    },
+    {
+      "start": 3.2,
+      "end": 6.0,
+      "text": "It lands better, and people understand what you mean."
+    }
+  ],
+  "overlays": [],
+  "keyword_highlights": [
+    "France",
+    "wrong/right",
+    "Chamour"
+  ],
+  "zooms": [],
+  "screenshots": [
+    {
+      "timestamp": "00:00:01",
+      "label": "wrong vs right card"
+    }
+  ],
+  "thumbnail": {
+    "timestamp": "00:00:01",
+    "title": "Ask: Chamour"
+  },
+  "cta": {
+    "text": "Follow Hamsa Nomads for more Jewish travel notes in France.",
+    "start": null
+  },
+  "output_settings": {
+    "width": 1080,
+    "height": 1920,
+    "video_name": "captioned_vertical.mp4",
+    "thumbnail_name": "thumbnail.jpg",
+    "duration_seconds": 30.0
+  },
+  "renderer": "ffmpeg"
+}
