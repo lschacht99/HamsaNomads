@@ -1,0 +1,45 @@
+{
+  "name": "Hamsa Nomads",
+  "colors": {
+    "warm_cream": "#F6F2E7",
+    "ivory_parchment": "#ECE7DB",
+    "sand": "#DCC7A1",
+    "clay": "#C8886A",
+    "olive_sage": "#7B8A6A",
+    "ink_black": "#111111"
+  },
+  "typography": {
+    "headline_serif": {
+      "font": "Playfair Display",
+      "fallbacks": ["Georgia", "Times New Roman", "serif"]
+    },
+    "body_sans": {
+      "font": "Montserrat",
+      "fallbacks": ["Arial", "Segoe UI", "sans-serif"]
+    },
+    "accent_handwritten": {
+      "font": "Caveat",
+      "fallbacks": ["Comic Sans MS", "Segoe Print", "cursive"]
+    }
+  },
+  "rules": {
+    "personality": [
+      "warm",
+      "human",
+      "Jewish travel network",
+      "documentary",
+      "natural",
+      "connected",
+      "grounded"
+    ],
+    "visual_signature": "imperfect line",
+    "motifs": ["route", "path", "passport", "map"],
+    "avoid": [
+      "corporate",
+      "glossy",
+      "neon",
+      "childish",
+      "cheap CapCut effects"
+    ]
+  }
+}

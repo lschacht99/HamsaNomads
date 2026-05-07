@@ -1,0 +1,68 @@
+{
+  "project_title": "Retreat House Tour",
+  "video_goal": "Make a premium Remotion house tour for a calm Jewish retreat.",
+  "style": "hamsa-clean",
+  "tone": "luxury, calm, warm, grounded",
+  "brand": "hamsa",
+  "renderer": "remotion",
+  "intro_card": {
+    "enabled": true,
+    "title": "Retreat House Tour",
+    "label": "HAMSA NOMADS RETREAT",
+    "duration_seconds": 1.5
+  },
+  "captions": [
+    {
+      "start": 2.0,
+      "end": 5.0,
+      "text": "A quiet house for slower mornings."
+    },
+    {
+      "start": 5.2,
+      "end": 8.5,
+      "text": "Warm rooms, soft light, and space to gather."
+    }
+  ],
+  "overlays": [
+    {
+      "start": 2.0,
+      "end": 4.5,
+      "text": "RETREAT NOTE",
+      "kind": "passport"
+    }
+  ],
+  "keyword_highlights": [
+    "retreat",
+    "luxury",
+    "house tour"
+  ],
+  "zooms": [
+    {
+      "start": 2.0,
+      "end": 7.0,
+      "scale": 1.03,
+      "anchor": "center"
+    }
+  ],
+  "screenshots": [
+    {
+      "timestamp": "00:00:03",
+      "label": "house tour"
+    }
+  ],
+  "thumbnail": {
+    "timestamp": "00:00:03",
+    "title": "Retreat House Tour"
+  },
+  "cta": {
+    "text": "Follow Hamsa Nomads for grounded Jewish retreat ideas.",
+    "start": null
+  },
+  "output_settings": {
+    "width": 1080,
+    "height": 1920,
+    "video_name": "captioned_vertical.mp4",
+    "thumbnail_name": "thumbnail.jpg",
+    "duration_seconds": 18.0
+  }
+}
