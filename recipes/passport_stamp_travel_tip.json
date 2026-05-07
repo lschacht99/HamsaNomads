@@ -1,0 +1,97 @@
+{
+  "project_title": "Make this a passport stamp travel note with a route line and warm parchm",
+  "brand": "hamsa_nomads",
+  "renderer": "ffmpeg",
+  "output": {
+    "width": 1080,
+    "height": 1920,
+    "fps": 30,
+    "duration_sec": 25,
+    "format": "mp4"
+  },
+  "input_video": {
+    "src": "",
+    "crop": "vertical_center_face",
+    "remove_silence": false
+  },
+  "style": {
+    "name": "passport_stamp",
+    "tone": "warm, human, grounded, documentary",
+    "brand_identity": "hamsa_nomads"
+  },
+  "logo": {
+    "enabled": true,
+    "position": "top_center",
+    "watermark": false,
+    "path": "assets/brand/hamsa-logo.png"
+  },
+  "transcription": {
+    "mode": "auto",
+    "model": "base",
+    "language": "auto"
+  },
+  "auto_cut": {
+    "enabled": false,
+    "silence_threshold_db": -35,
+    "min_silence_duration_sec": 0.7,
+    "keep_silence_sec": 0.25
+  },
+  "intro_card": {
+    "enabled": true,
+    "duration_sec": 1.8,
+    "label": "HAMSA NOMADS",
+    "headline": "Make this a passport stamp travel note with a ro",
+    "subheadline": "Warm local context for your next trip",
+    "motif": "imperfect_route_line"
+  },
+  "caption_system": {
+    "type": "animated_dialogue_box",
+    "position": "lower_third",
+    "max_words_per_caption": 6,
+    "box_style": "parchment",
+    "highlight_keywords": [],
+    "keyword_highlights": []
+  },
+  "overlays": [
+    {
+      "type": "passport_stamp",
+      "start_sec": 3.2,
+      "duration_sec": 0.8,
+      "text": "HAMSA APPROVED"
+    }
+  ],
+  "motion": {
+    "punch_in_on_hook": true,
+    "punch_in_on_keywords": true,
+    "subtle_zoom_amount": 1.08,
+    "caption_pop": true,
+    "avoid_cheap_transitions": true
+  },
+  "transitions": [
+    {
+      "type": "passport_stamp_pop",
+      "start_sec": 3.2,
+      "duration_sec": 0.35
+    }
+  ],
+  "section_cards": [],
+  "freeze_frames": [
+    {
+      "time_sec": 3.2,
+      "duration_sec": 0.5,
+      "overlay": "Passport stamp moment"
+    }
+  ],
+  "thumbnail": {
+    "enabled": true,
+    "time_sec": 1.5,
+    "headline": "Make this a passport stamp travel note w",
+    "style": "passport_stamp"
+  },
+  "cta": {
+    "enabled": true,
+    "start_sec": 22,
+    "text": "Follow Hamsa Nomads for Jewish travel tips",
+    "style": "clean_brand_end"
+  }
+}
