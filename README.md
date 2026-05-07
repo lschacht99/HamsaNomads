@@ -4,7 +4,7 @@ A simple Windows tool that turns one MP4 into a vertical `1080x1920` captioned v
 
 - Free and local.
 - No paid APIs.
-- Uses Python, FFmpeg, local `faster-whisper` captions, and optional Telegram Bot API access.
+- Uses Python, FFmpeg, optional local `faster-whisper` captions, transcript mode, and optional Telegram Bot API access.
 - Designed for weak Windows PCs with Intel graphics by defaulting to CPU-friendly settings.
 
 ## First-time setup
@@ -15,7 +15,7 @@ Double click:
 install_windows.bat
 ```
 
-The installer creates `.venv`, updates pip, and installs this project.
+The installer creates `.venv`, updates pip, and installs the basic project first. Python 3.11 is recommended on Windows.
 
 You also need FFmpeg. The easiest non-technical setup is to put `ffmpeg.exe` in the same folder as `run_hamsa.bat`.
 
@@ -24,6 +24,39 @@ If FFmpeg is missing, `install_windows.bat` prints instructions. If you use Wing
 ```powershell
 winget install --id Gyan.FFmpeg -e
 ```
+
+
+## Install modes
+
+### Basic mode: no Whisper required
+
+Basic mode is installed with:
+
+```powershell
+pip install -e .
+```
+
+This supports the CLI, recipes, ASS subtitle generation, FFmpeg rendering, transcript mode, Telegram bot code, and the optional Remotion project. It does **not** install `faster-whisper`, so it avoids the `ctranslate2` dependency conflict seen with older `faster-whisper` pins.
+
+Use transcript mode in basic installs:
+
+```powershell
+.\.venv\Scripts\python.exe -m hamsa_caption_engine --input input\test.mp4 --transcript input\transcript.txt
+```
+
+### AI transcription mode
+
+AI transcription mode is optional and installs `faster-whisper>=1.1.1,<2`:
+
+```powershell
+pip install -e .[whisper]
+```
+
+If Whisper is not installed and you try automatic transcription, the tool will tell you to use `--transcript transcript.txt` or install with `pip install -e .[whisper]`.
+
+### Python version
+
+Python 3.11 is recommended. Python 3.11.14 is fine; the previous install problem was caused by dependency resolution around older `faster-whisper`/`ctranslate2` pins, not by Python 3.11.
 
 ## Everyday local use
 
@@ -64,7 +97,7 @@ Then choose caption mode:
 2 Transcript mode   use input\transcript.txt, faster
 ```
 
-Whisper mode is fully local and free. Transcript mode is best for weak PCs when you already typed the captions yourself.
+Basic mode works without Whisper and can render from `input\transcript.txt`. Whisper mode is fully local and free, but it needs the optional install: `pip install -e .[whisper]`. Transcript mode is best for weak PCs when you already typed the captions yourself.
 
 ### Step 4: get video from `output`
 
@@ -295,10 +328,10 @@ Available styles:
 
 ## Weak PC tips
 
-- Start with `hamsa-clean` and Whisper mode using the default `tiny.en` model.
+- Start with `hamsa-clean` and transcript mode on weak PCs, then install `.[whisper]` only if you want automatic transcription.
 - Use transcript mode for quick tests.
 - Keep test clips short.
-- Close browsers and games before Whisper mode.
+- Close browsers and games before Whisper mode if you install the optional `.[whisper]` extra.
 - Rendering uses CPU x264 settings instead of paid APIs or GPU-only encoders.
 - The Telegram bot processes one video at a time to avoid overloading the PC.
 

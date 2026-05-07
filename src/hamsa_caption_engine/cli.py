@@ -388,7 +388,7 @@ def transcribe(audio_path: Path, model_size: str, language: str | None) -> list[
         from faster_whisper import WhisperModel
     except ImportError as exc:
         raise SystemExit(
-            "Python package faster-whisper is not installed. Run: pip install -r requirements.txt"
+            "Whisper transcription is not installed. Use --transcript transcript.txt or install with pip install -e .[whisper]."
         ) from exc
 
     model = WhisperModel(model_size, device="cpu", compute_type="int8")

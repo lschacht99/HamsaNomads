@@ -1,107 +1,78 @@
 @echo off
-setlocal EnableExtensions EnableDelayedExpansion
+setlocal EnableExtensions
 cd /d "%~dp0"
 
 echo ========================================
-echo Hamsa Caption Engine
+echo Hamsa Caption Engine - One Click Runner
 echo ========================================
 echo.
 
-if exist ".venv\Scripts\activate.bat" (
-  call ".venv\Scripts\activate.bat"
-)
-
-where python >nul 2>nul
-if errorlevel 1 (
-  echo ERROR: Python was not found.
-  echo Run install_windows.bat first. If that fails, install Python from python.org
-  echo and check "Add python.exe to PATH" during install.
-  pause
-  exit /b 1
-)
-
-if exist "ffmpeg.exe" (
-  set "PATH=%CD%;%PATH%"
-) else (
-  where ffmpeg >nul 2>nul
-  if errorlevel 1 (
-    echo ERROR: FFmpeg was not found.
-    echo.
-    echo Put ffmpeg.exe in this project folder, or install FFmpeg system-wide.
-    echo If you have winget, you can run:
-    echo   winget install --id Gyan.FFmpeg -e
-    echo.
-    pause
-    exit /b 1
-  )
-)
-
-set "INPUT_VIDEO="
-for %%F in (input\*.mp4) do (
-  if not defined INPUT_VIDEO if exist "%%~fF" set "INPUT_VIDEO=%%~fF"
-)
-
-if not defined INPUT_VIDEO (
-  echo ERROR: No MP4 file was found in the input folder.
-  echo Put one .mp4 video inside:
-  echo   %CD%\input
+if not exist "input\test.mp4" (
+  echo ERROR: I could not find your video.
+  echo.
+  echo Please put your video here:
+  echo   %CD%\input\test.mp4
+  echo.
+  echo Tip: rename your MP4 to test.mp4 and place it inside the input folder.
   echo.
   pause
   exit /b 1
 )
 
-echo Found video:
-echo   %INPUT_VIDEO%
+if not exist "transcript.txt" (
+  echo ERROR: I could not find your transcript.
+  echo.
+  echo Please create this file:
+  echo   %CD%\transcript.txt
+  echo.
+  echo Put one caption per line in transcript.txt, then run this file again.
+  echo.
+  pause
+  exit /b 1
+)
+
+where py >nul 2>nul
+if errorlevel 1 (
+  echo ERROR: The Windows Python launcher 'py' was not found.
+  echo.
+  echo Install Python 3.11 from python.org and check "Add python.exe to PATH".
+  echo Then run install_windows.bat and try again.
+  echo.
+  pause
+  exit /b 1
+)
+
+if not exist "output" mkdir "output"
+
+echo Found video:      input\test.mp4
+echo Found transcript: transcript.txt
 echo.
 
 echo Choose caption style:
-echo   1. game
-echo   2. paris-tip
-echo   3. hamsa-clean
-echo   4. wrong-vs-right
-echo   5. video-game-dialogue
+echo   1 game
+echo   2 paris-tip
+echo   3 hamsa-clean
 echo.
-set /p STYLE_CHOICE="Type 1, 2, 3, 4, or 5, then press Enter: "
+set /p STYLE_CHOICE="Type 1, 2, or 3, then press Enter: "
+
+set "STYLE=hamsa-clean"
 if "%STYLE_CHOICE%"=="1" set "STYLE=game"
 if "%STYLE_CHOICE%"=="2" set "STYLE=paris-tip"
 if "%STYLE_CHOICE%"=="3" set "STYLE=hamsa-clean"
-if "%STYLE_CHOICE%"=="4" set "STYLE=wrong-vs-right"
-if "%STYLE_CHOICE%"=="5" set "STYLE=video-game-dialogue"
-if not defined STYLE (
-  echo Invalid choice. Using hamsa-clean.
-  set "STYLE=hamsa-clean"
-)
 
 echo.
-echo Caption text mode:
-echo   1. Whisper mode - automatic local captions, slower, no paid APIs
-echo   2. Transcript mode - use input\transcript.txt, faster for weak PCs
-echo.
-set /p MODE_CHOICE="Type 1 or 2, then press Enter: "
-
-echo.
-echo Running Hamsa Caption Engine with style: %STYLE%
-echo Please wait. Weak PCs can take a while, especially in Whisper mode.
+echo Rendering with style: %STYLE%
+echo This uses transcript mode, so Whisper is not required.
 echo.
 
-if "%MODE_CHOICE%"=="2" (
-  if not exist "input\transcript.txt" (
-    echo.
-    echo ERROR: Transcript mode needs this file:
-    echo   %CD%\input\transcript.txt
-    echo.
-    echo Put one caption per line in transcript.txt, then run again.
-    pause
-    exit /b 1
-  )
-  python -m hamsa_caption_engine --input "%INPUT_VIDEO%" --style %STYLE% --transcript "input\transcript.txt"
-) else (
-  python -m hamsa_caption_engine --input "%INPUT_VIDEO%" --style %STYLE% --model tiny.en
-)
-
+py -3.11 -m hamsa_caption_engine --input input\test.mp4 --output-dir output --style %STYLE% --transcript transcript.txt --thumbnail-at 00:00:01
 if errorlevel 1 (
   echo.
-  echo ERROR: The render failed. Read the message above for details.
+  echo ERROR: The render failed.
+  echo.
+  echo Try running install_windows.bat first, and make sure FFmpeg is installed
+  echo or ffmpeg.exe is in this project folder.
+  echo.
   pause
   exit /b 1
 )

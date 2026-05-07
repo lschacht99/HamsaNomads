@@ -9,10 +9,14 @@ description = "Windows-friendly local vertical video caption engine with FFmpeg,
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
-  "faster-whisper>=1.0.0",
   "python-telegram-bot>=21.0",
 ]
 keywords = ["ffmpeg", "captions", "whisper", "telegram", "remotion", "video"]
+
+[project.optional-dependencies]
+whisper = [
+  "faster-whisper>=1.1.1,<2",
+]
 
 [project.scripts]
 hamsa-caption = "hamsa_caption_engine.cli:main"

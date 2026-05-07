@@ -11,7 +11,7 @@ where python >nul 2>nul
 if errorlevel 1 (
   echo ERROR: Python was not found.
   echo.
-  echo Install Python 3.10 or newer from:
+  echo Install Python 3.11 from:
   echo https://www.python.org/downloads/windows/
   echo.
   echo During install, check: Add python.exe to PATH
@@ -40,12 +40,33 @@ if errorlevel 1 (
   exit /b 1
 )
 
-echo Installing Hamsa Caption Engine ...
+echo Installing Hamsa Caption Engine basic mode ...
+echo Basic mode supports transcript rendering and recipes without Whisper.
 ".venv\Scripts\python.exe" -m pip install -e .
 if errorlevel 1 (
-  echo ERROR: package install failed.
+  echo ERROR: basic package install failed.
   pause
   exit /b 1
+)
+
+echo.
+echo Optional: install local AI Whisper transcription?
+echo This installs faster-whisper and can take longer on weak PCs.
+echo You can skip this and still use Transcript mode.
+set /p INSTALL_WHISPER="Install Whisper transcription now? Type Y and press Enter, or press Enter to skip: "
+if /I "%INSTALL_WHISPER%"=="Y" (
+  echo Installing Whisper transcription support ...
+  ".venv\Scripts\python.exe" -m pip install -e ".[whisper]"
+  if errorlevel 1 (
+    echo ERROR: Whisper install failed.
+    echo You can still use transcript mode, or try later:
+    echo   .venv\Scripts\python.exe -m pip install -e .[whisper]
+    pause
+    exit /b 1
+  )
+) else (
+  echo Skipping Whisper. Use transcript mode, or install later with:
+  echo   .venv\Scripts\python.exe -m pip install -e .[whisper]
 )
 
 echo.
