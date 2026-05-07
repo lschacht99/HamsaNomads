@@ -18,14 +18,14 @@ if exist ".env" (
 ) else (
   echo ERROR: .env was not found.
   echo Create .env with this line:
-  echo   TELEGRAM_BOT_TOKEN=your_token_here
+  echo   HAMSA_TELEGRAM_BOT_TOKEN=your_token_here
   echo.
   pause
   exit /b 1
 )
 
-if "%TELEGRAM_BOT_TOKEN%"=="" (
-  echo ERROR: TELEGRAM_BOT_TOKEN is missing from .env.
+if "%HAMSA_TELEGRAM_BOT_TOKEN%"=="" (
+  echo ERROR: HAMSA_TELEGRAM_BOT_TOKEN is missing from .env.
   echo.
   pause
   exit /b 1

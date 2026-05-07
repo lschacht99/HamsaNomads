@@ -11,3 +11,5 @@ __pycache__/
 
 /logs/*
 !/logs/.gitkeep
+
+/remotion/node_modules/

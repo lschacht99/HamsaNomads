@@ -17,7 +17,7 @@ CAPTIONED_VIDEO = OUTPUT_DIR / "captioned_vertical.mp4"
 THUMBNAIL = OUTPUT_DIR / "thumbnail.jpg"
 LOG_DIR = ROOT / "logs"
 BOT_RENDER_LOG = LOG_DIR / "bot_render.log"
-TOKEN_ENV_VAR = "TELEGRAM_BOT_TOKEN"
+TOKEN_ENV_VAR = "HAMSA_TELEGRAM_BOT_TOKEN"
 STYLE_COMMANDS = {
     "game": "game",
     "paris": "paris-tip",
@@ -229,7 +229,7 @@ def main() -> int:
     token = os.environ.get(TOKEN_ENV_VAR)
     if not token:
         raise SystemExit(
-            "Missing TELEGRAM_BOT_TOKEN. Create .env with TELEGRAM_BOT_TOKEN=your_token_here."
+            "Missing HAMSA_TELEGRAM_BOT_TOKEN. Create .env with HAMSA_TELEGRAM_BOT_TOKEN=your_token_here."
         )
 
     print("Starting Hamsa Telegram bot. Press Ctrl+C to stop.")

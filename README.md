@@ -128,7 +128,7 @@ The Telegram bot works in transcript mode first, so `faster-whisper` is still op
 In the project root, create a file named `.env`:
 
 ```text
-TELEGRAM_BOT_TOKEN=your_token_here
+HAMSA_TELEGRAM_BOT_TOKEN=your_token_here
 ```
 
 The `.env` file is ignored by git so your token is not committed.
