@@ -17,8 +17,12 @@ def apply_prompt_rules(recipe: dict[str, Any], prompt: str, *, requested_rendere
     if requested_renderer:
         new["renderer"] = requested_renderer
 
+    if _has(lower, "make captions nicer", "professional captions", "premium captions"):
+        new["style"]["name"] = "hamsa-clean"
+        new["caption_system"].update(type="animated_dialogue_box", box_style="parchment")
     if _has(lower, "video game", "quest", "rpg", "level", "mission"):
         new["style"]["name"] = "video_game_dialogue"
+        new["caption_system"].update(type="video_game_dialogue", box_style="parchment")
         new["intro_card"].update(label="QUEST UNLOCKED", headline="Paris quest", subheadline="A warm travel mission, Hamsa style")
         new["section_cards"] = [{"title": "PARIS QUEST", "start_sec": 1.5, "duration_sec": 0.8}]
         new["transitions"].append({"type": "game_quest_banner_reveal", "start_sec": 1.5, "duration_sec": 0.35})
@@ -26,10 +30,15 @@ def apply_prompt_rules(recipe: dict[str, Any], prompt: str, *, requested_rendere
         new["style"]["name"] = "paris-tip"
         new["intro_card"].update(label="PARIS NOTE", headline="Ask like a local", subheadline="Chamour, context, and confidence")
         new["caption_system"]["highlight_keywords"] = sorted(set(new["caption_system"].get("highlight_keywords", []) + ["Paris", "France", "chamour"]))
+        new["caption_system"]["keyword_highlights"] = [{"word": "Chamour", "style": "correct", "color": "#7B8A6A"}]
         new["cta"]["text"] = "Follow Hamsa Nomads for Jewish travel tips in France"
     if _has(lower, "wrong/right", "wrong vs right", "wrong-vs-right", "mistake", "don't say", "dont say", "instead"):
         new["style"]["name"] = "wrong-vs-right"
-        new["overlays"].append({"type": "wrong_vs_right", "start_sec": 2.0, "duration_sec": 3.0, "wrong": "WRONG WORD", "right": "LOCAL TIP"})
+        new["overlays"].append({"type": "wrong_vs_right", "start_sec": 2.0, "duration_sec": 3.0, "wrong": "Don’t ask: Cholov Yisroel", "right": "Ask: Chamour"})
+        new["caption_system"]["keyword_highlights"] = [
+            {"word": "Cholov Yisroel", "style": "wrong", "color": "#C8886A"},
+            {"word": "Chamour", "style": "correct", "color": "#7B8A6A"},
+        ]
         new["section_cards"].append({"title": "WRONG WORD", "start_sec": 2.0, "duration_sec": 0.7})
     if _has(lower, "luxury", "retreat", "house", "villa"):
         new["style"]["name"] = "retreat_luxury"

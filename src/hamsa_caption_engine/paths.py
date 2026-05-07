@@ -17,13 +17,15 @@ LOG_DIR = ROOT / "logs"
 RECIPES_DIR = ROOT / "recipes"
 MODIFIED_RECIPES_DIR = RECIPES_DIR / "modified"
 BRAND_DIR = ROOT / "brand"
+ASSETS_DIR = ROOT / "assets"
+BRAND_ASSETS_DIR = ASSETS_DIR / "brand"
 REMOTION_DIR = ROOT / "remotion"
 TOOLS_FFMPEG_DIR = ROOT / "tools" / "ffmpeg"
 TOOLS_FFMPEG_BIN = TOOLS_FFMPEG_DIR / "bin"
 
 
 def ensure_project_dirs() -> None:
-    for path in (INPUT_DIR, OUTPUT_DIR, LOG_DIR, RECIPES_DIR, MODIFIED_RECIPES_DIR, TOOLS_FFMPEG_DIR):
+    for path in (INPUT_DIR, OUTPUT_DIR, LOG_DIR, RECIPES_DIR, MODIFIED_RECIPES_DIR, TOOLS_FFMPEG_DIR, BRAND_ASSETS_DIR):
         path.mkdir(parents=True, exist_ok=True)
 
 

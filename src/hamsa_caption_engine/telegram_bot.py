@@ -126,8 +126,10 @@ async def status(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         f"faster_whisper imports: {bool(importlib.util.find_spec('faster_whisper'))}",
         f"ffmpeg found: {find_ffmpeg() or 'missing'}",
         f"node found: {shutil.which('node') or 'missing'}",
+        f"node warning: {collect().get('node warning', 'none')}",
         f"npm found: {shutil.which('npm') or 'missing'}",
         f"Remotion project exists: {(ROOT / 'remotion').exists()}",
+        f"logo exists: {(ROOT / 'assets' / 'brand' / 'hamsa-logo.png').exists()}",
         f"Python executable: {sys.executable}",
         f"project root: {ROOT}",
     ]
@@ -262,7 +264,8 @@ def _write_render_log(state: dict[str, Any], cmd: list[str], proc: subprocess.Co
     ]
     if proc:
         lines.extend(["stdout:", proc.stdout or "", "stderr:", proc.stderr or "", f"return code: {proc.returncode}"])
-    BOT_RENDER_LOG.write_text("\n".join(lines), encoding="utf-8")
+    with BOT_RENDER_LOG.open("a", encoding="utf-8") as handle:
+        handle.write("\n" + "\n".join(lines) + "\n")
 
 
 async def render_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:

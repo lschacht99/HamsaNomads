@@ -2,7 +2,7 @@ import {bundle} from '@remotion/bundler';
 import {renderMedia, selectComposition, renderStill} from '@remotion/renderer';
 import fs from 'node:fs';
 import path from 'node:path';
-import {fileURLToPath} from 'node:url';
+import {fileURLToPath, pathToFileURL} from 'node:url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const args = process.argv.slice(2);
@@ -16,7 +16,11 @@ const output = path.resolve(process.cwd(), getArg('--output', '../output/final_v
 const recipe = JSON.parse(fs.readFileSync(recipePath, 'utf-8'));
 const entry = path.join(__dirname, 'src', 'Root.tsx');
 const serveUrl = await bundle(entry);
-const inputProps = {inputVideo: input, recipe};
+const logoConfig = recipe.logo ?? {};
+const logoFallback = logoConfig.fallback_text ?? 'Hamsa Nomads';
+const logoCandidate = logoConfig.path ? (path.isAbsolute(logoConfig.path) ? logoConfig.path : path.resolve(__dirname, '..', logoConfig.path)) : path.resolve(__dirname, '..', 'assets/brand/hamsa-logo.png');
+const logoSrc = fs.existsSync(logoCandidate) ? pathToFileURL(logoCandidate).href : undefined;
+const inputProps = {inputVideo: pathToFileURL(input).href, recipe, logoSrc, logoFallback};
 const composition = await selectComposition({serveUrl, id: 'HamsaVideo', inputProps});
 await renderMedia({composition, serveUrl, codec: 'h264', outputLocation: output, inputProps, chromiumOptions: {disableWebSecurity: true}});
 try {

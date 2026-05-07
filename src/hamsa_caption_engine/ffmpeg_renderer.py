@@ -6,21 +6,21 @@ import subprocess
 from pathlib import Path
 from typing import Any
 
-from .paths import find_ffmpeg, find_ffprobe
-from .recipe_schema import validate_recipe, save_recipe
+from .paths import ROOT, find_ffmpeg
+from .recipe_schema import save_recipe, validate_recipe
 from .transcription import load_manual_transcript, save_transcript, segments_from_transcript_text, transcribe_with_whisper
 
 VIDEO_W = 1080
 VIDEO_H = 1920
 
-STYLE_COLORS = {
-    "video_game_dialogue": ("&H00111111", "&H00E7F2F6", "&H006A8A7B"),
-    "game": ("&H00111111", "&H00E7F2F6", "&H006A8A7B"),
-    "paris-tip": ("&H00111111", "&H00DBE7EC", "&H006A88C8"),
-    "hamsa-clean": ("&H00111111", "&H00E7F2F6", "&H006A8A7B"),
-    "wrong-vs-right": ("&H00111111", "&H00DBE7EC", "&H006A88C8"),
-    "passport_stamp": ("&H00111111", "&H00DBE7EC", "&H00A1C7DC"),
-    "retreat_luxury": ("&H00111111", "&H00DBE7EC", "&H00A1C7DC"),
+STYLE_CONFIG = {
+    "hamsa-clean": {"font": "Arial", "size": 66, "primary": "#111111", "accent": "#7B8A6A", "box": "#F6F2E7", "border": "#7B8A6A", "label": "HAMSA NOMADS", "margin_v": 270},
+    "paris-tip": {"font": "Arial", "size": 64, "primary": "#111111", "accent": "#C8886A", "box": "#ECE7DB", "border": "#DCC7A1", "label": "PARIS TIP", "margin_v": 300},
+    "game": {"font": "Georgia", "size": 66, "primary": "#111111", "accent": "#7B8A6A", "box": "#F6F2E7", "border": "#C8886A", "label": "QUEST UNLOCKED", "margin_v": 250},
+    "video_game_dialogue": {"font": "Georgia", "size": 66, "primary": "#111111", "accent": "#7B8A6A", "box": "#F6F2E7", "border": "#C8886A", "label": "QUEST UNLOCKED", "margin_v": 250},
+    "wrong-vs-right": {"font": "Arial", "size": 62, "primary": "#111111", "accent": "#C8886A", "box": "#ECE7DB", "border": "#C8886A", "label": "WRONG WORD", "margin_v": 285},
+    "passport_stamp": {"font": "Arial", "size": 62, "primary": "#111111", "accent": "#C8886A", "box": "#ECE7DB", "border": "#C8886A", "label": "PASSPORT NOTE", "margin_v": 290},
+    "retreat_luxury": {"font": "Georgia", "size": 60, "primary": "#111111", "accent": "#7B8A6A", "box": "#ECE7DB", "border": "#DCC7A1", "label": "RETREAT NOTE", "margin_v": 300},
 }
 
 
@@ -36,10 +36,37 @@ def _ass_time(seconds: float) -> str:
     return f"{hours}:{minutes:02d}:{secs:02d}.{centis:02d}"
 
 
+def _hex_to_ass(hex_color: str, alpha: str = "00") -> str:
+    clean = hex_color.lstrip("#")
+    red, green, blue = clean[0:2], clean[2:4], clean[4:6]
+    return f"&H{alpha}{blue}{green}{red}"
+
+
+def _override_color(hex_color: str) -> str:
+    clean = hex_color.lstrip("#")
+    red, green, blue = clean[0:2], clean[2:4], clean[4:6]
+    return f"&H{blue}{green}{red}&"
+
+
+def _caption_text(text: str, recipe: dict[str, Any]) -> str:
+    escaped = _ass_escape(text)
+    for item in recipe.get("caption_system", {}).get("keyword_highlights", []):
+        word = item.get("word", "")
+        color = item.get("color", "#7B8A6A")
+        if word and word.lower() in escaped.lower():
+            escaped = escaped.replace(word, f"{{\\c{_override_color(color)}\\b1}}{_ass_escape(word)}{{\\rCaption}}")
+    return escaped
+
+
 def write_ass(segments: list[dict[str, Any]], recipe: dict[str, Any], path: Path) -> Path:
-    style = recipe.get("style", {}).get("name", "hamsa-clean")
-    primary, back, outline = STYLE_COLORS.get(style, STYLE_COLORS["hamsa-clean"])
-    label = recipe.get("intro_card", {}).get("label", "HAMSA NOMADS")
+    style_name = recipe.get("style", {}).get("name", "hamsa-clean")
+    config = STYLE_CONFIG.get(style_name, STYLE_CONFIG["hamsa-clean"])
+    primary = _hex_to_ass(config["primary"])
+    accent = _hex_to_ass(config["accent"])
+    box = _hex_to_ass(config["box"], "10")
+    border = _hex_to_ass(config["border"])
+    label = recipe.get("intro_card", {}).get("label") or config["label"]
+    margin_v = int(config["margin_v"])
     header = f"""[Script Info]
 ScriptType: v4.00+
 PlayResX: {VIDEO_W}
@@ -49,8 +76,9 @@ ScaledBorderAndShadow: yes
 
 [V4+ Styles]
 Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
-Style: Caption,Arial,66,{primary},&H000000FF,{outline},{back},-1,0,0,0,100,100,0,0,3,4,0,2,84,84,250,1
-Style: Label,Georgia,44,&H00111111,&H000000FF,&H00A1C7DC,&H00E7F2F6,-1,0,0,0,100,100,0,0,3,2,0,8,80,80,120,1
+Style: Caption,{config['font']},{config['size']},{primary},{accent},{border},{box},-1,0,0,0,100,100,0,0,3,5,1,2,96,96,{margin_v},1
+Style: Label,Georgia,42,{primary},{accent},{border},{_hex_to_ass('#F6F2E7', '08')},-1,0,0,0,100,100,1,0,3,3,0,8,96,96,112,1
+Style: Stamp,Arial,50,{accent},{primary},{_hex_to_ass('#DCC7A1')},{_hex_to_ass('#ECE7DB', '08')},-1,0,0,0,100,100,1,0,3,3,0,8,96,96,170,1
 
 [Events]
 Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
@@ -61,13 +89,30 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
         end = float(intro.get("duration_sec", 1.8))
         events.append(f"Dialogue: 2,{_ass_time(0)},{_ass_time(end)},Label,,0,0,0,,{_ass_escape(label)}\\N{_ass_escape(intro.get('headline', 'Jewish travel note'))}")
     for seg in segments:
-        events.append(f"Dialogue: 3,{_ass_time(float(seg['start']))},{_ass_time(float(seg['end']))},Caption,,0,0,0,,{_ass_escape(seg['text'])}")
+        events.append(f"Dialogue: 3,{_ass_time(float(seg['start']))},{_ass_time(float(seg['end']))},Caption,,0,0,0,,{_caption_text(seg['text'], recipe)}")
+    for overlay in recipe.get("overlays", []):
+        if overlay.get("type") == "wrong_vs_right":
+            start = float(overlay.get("start_sec", 2.0))
+            end = start + float(overlay.get("duration_sec", 3.0))
+            text = f"{{\\c{_override_color('#C8886A')}}}❌ {_ass_escape(overlay.get('wrong', 'Don’t ask: Cholov Yisroel'))}\\N{{\\c{_override_color('#7B8A6A')}}}✅ {_ass_escape(overlay.get('right', 'Ask: Chamour'))}"
+            events.append(f"Dialogue: 5,{_ass_time(start)},{_ass_time(end)},Caption,,0,0,0,,{text}")
     for card in recipe.get("section_cards", []):
         start = float(card.get("start_sec", 0))
         end = start + float(card.get("duration_sec", 0.7))
-        events.append(f"Dialogue: 4,{_ass_time(start)},{_ass_time(end)},Label,,0,0,0,,{_ass_escape(card.get('title', 'LOCAL TIP'))}")
+        events.append(f"Dialogue: 4,{_ass_time(start)},{_ass_time(end)},Stamp,,0,0,0,,{_ass_escape(card.get('title', 'LOCAL TIP'))}")
     path.write_text(header + "\n".join(events) + "\n", encoding="utf-8")
     return path
+
+
+def _resolve_logo_path(recipe: dict[str, Any], explicit_logo: str | Path | None = None) -> Path | None:
+    logo_settings = recipe.get("logo", {})
+    candidate = explicit_logo or logo_settings.get("path") or "assets/brand/hamsa-logo.png"
+    if not logo_settings.get("enabled", True) and explicit_logo is None:
+        return None
+    path = Path(candidate)
+    if not path.is_absolute():
+        path = ROOT / path
+    return path if path.exists() else None
 
 
 def _detect_cut_plan(video_path: Path, output_dir: Path, recipe: dict[str, Any], log_notes: list[str]) -> dict[str, Any]:
@@ -106,13 +151,12 @@ def _detect_cut_plan(video_path: Path, output_dir: Path, recipe: dict[str, Any],
         note = f"opening trimmed candidate: first dead air ends at {silences[0]['end']:.2f}s"
         plan["notes"].append(note)
         log_notes.append(note)
-    # Conservative metadata-only plan: renderer falls back to original footage to avoid sync damage on weak PCs.
     plan["notes"].append("cut metadata saved; original media preserved; jump-cut render can be expanded from this plan")
     output_dir.joinpath("cut_plan.json").write_text(json.dumps(plan, indent=2), encoding="utf-8")
     return plan
 
 
-def render_ffmpeg(video_path: str | Path, output_dir: str | Path, recipe: dict[str, Any], *, transcript_path: str | Path | None = None, thumbnail_at: str = "00:00:01") -> dict[str, Any]:
+def render_ffmpeg(video_path: str | Path, output_dir: str | Path, recipe: dict[str, Any], *, transcript_path: str | Path | None = None, thumbnail_at: str = "00:00:01", logo_path: str | Path | None = None) -> dict[str, Any]:
     ffmpeg = find_ffmpeg()
     if not ffmpeg:
         raise RuntimeError("FFmpeg missing. Run download_ffmpeg.bat or put ffmpeg.exe and ffprobe.exe inside tools\\ffmpeg\\bin\\.")
@@ -122,6 +166,8 @@ def render_ffmpeg(video_path: str | Path, output_dir: str | Path, recipe: dict[s
     recipe = validate_recipe(recipe)
     recipe["renderer"] = "ffmpeg"
     recipe["input_video"]["src"] = str(video)
+    if logo_path:
+        recipe.setdefault("logo", {})["path"] = str(logo_path)
     notes: list[str] = []
     _detect_cut_plan(video, out, recipe, notes)
 
@@ -137,9 +183,16 @@ def render_ffmpeg(video_path: str | Path, output_dir: str | Path, recipe: dict[s
     ass = write_ass(transcript.get("segments", []), recipe, out / "captions.ass")
     save_recipe(recipe, out / "edit_recipe.json")
 
-    vf = f"scale={VIDEO_W}:{VIDEO_H}:force_original_aspect_ratio=increase,crop={VIDEO_W}:{VIDEO_H},subtitles={ass.as_posix()}"
+    base_vf = f"scale={VIDEO_W}:{VIDEO_H}:force_original_aspect_ratio=increase,crop={VIDEO_W}:{VIDEO_H},subtitles={ass.as_posix()}"
+    logo = _resolve_logo_path(recipe, logo_path)
     final = out / "final_video.mp4"
-    cmd = [ffmpeg, "-y", "-i", str(video), "-vf", vf, "-c:v", "libx264", "-preset", "veryfast", "-crf", "23", "-pix_fmt", "yuv420p", "-c:a", "aac", "-b:a", "128k", "-movflags", "+faststart", str(final)]
+    if logo:
+        filter_complex = f"[0:v]{base_vf}[base];[1:v]scale=200:-1[logo];[base][logo]overlay=(W-w)/2:72:format=auto[v]"
+        cmd = [ffmpeg, "-y", "-i", str(video), "-i", str(logo), "-filter_complex", filter_complex, "-map", "[v]", "-map", "0:a?", "-c:v", "libx264", "-preset", "veryfast", "-crf", "23", "-pix_fmt", "yuv420p", "-c:a", "aac", "-b:a", "128k", "-movflags", "+faststart", str(final)]
+        notes.append(f"logo overlay used: {logo}")
+    else:
+        cmd = [ffmpeg, "-y", "-i", str(video), "-vf", base_vf, "-c:v", "libx264", "-preset", "veryfast", "-crf", "23", "-pix_fmt", "yuv420p", "-c:a", "aac", "-b:a", "128k", "-movflags", "+faststart", str(final)]
+        notes.append("logo overlay skipped: logo file missing or disabled")
     subprocess.run(cmd, check=True)
     thumb = out / "thumbnail.jpg"
     subprocess.run([ffmpeg, "-y", "-ss", thumbnail_at, "-i", str(video), "-frames:v", "1", "-vf", f"scale={VIDEO_W}:{VIDEO_H}:force_original_aspect_ratio=increase,crop={VIDEO_W}:{VIDEO_H}", str(thumb)], check=True)

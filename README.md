@@ -62,6 +62,49 @@ python -m pip install -e ".[whisper]"
 
 The Windows scripts use `.venv\Scripts\python.exe` for runtime and bot commands.
 
+
+## Logo and branded caption design
+
+Add your Hamsa Nomads logo here:
+
+```text
+assets/brand/hamsa-logo.png
+assets/brand/hamsa-logo-white.png
+assets/brand/hamsa-logo-dark.png
+```
+
+Only `assets/brand/hamsa-logo.png` is required. If the logo is missing, Remotion renders the fallback text `Hamsa Nomads` instead of crashing, and FFmpeg simply skips the logo overlay.
+
+To tune the visual system:
+
+- Edit `brand/hamsa_nomads_brand.json` for colors, typography, and logo paths.
+- Edit a recipe `caption_system` block for caption type, parchment box style, max words, and keyword highlights.
+- Edit `remotion/src/components/CaptionDialogueBox.tsx` for premium animated caption design.
+- Edit `src/hamsa_caption_engine/ffmpeg_renderer.py` for fast FFmpeg caption style.
+
+Recommended workflow:
+
+1. Add logo to `assets/brand/hamsa-logo.png`.
+2. Run `/status` in Telegram and confirm the logo exists.
+3. Use `/ffmpeg` for reliable weak-PC mode.
+4. Use `/remotion` for premium animated mode.
+5. If Remotion fails, open `logs/bot_render.log`; it includes full Node/Remotion stdout/stderr, paths, command, Node/npm versions, and logo status.
+
+Example recipe caption design:
+
+```json
+"caption_system": {
+  "type": "video_game_dialogue",
+  "position": "lower_third",
+  "max_words_per_caption": 6,
+  "box_style": "parchment",
+  "keyword_highlights": [
+    {"word": "Cholov Yisroel", "style": "wrong", "color": "#C8886A"},
+    {"word": "Chamour", "style": "correct", "color": "#7B8A6A"}
+  ]
+}
+```
+
 ## Bot commands
 
 - `/start` and `/help` explain the workflow.

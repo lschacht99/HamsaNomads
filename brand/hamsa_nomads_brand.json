@@ -26,5 +26,11 @@
     "avoid corporate glossy effects",
     "avoid childish design",
     "keep text readable on Instagram Reels"
-  ]
+  ],
+  "logo": {
+    "primary": "assets/brand/hamsa-logo.png",
+    "white": "assets/brand/hamsa-logo-white.png",
+    "dark": "assets/brand/hamsa-logo-dark.png",
+    "fallback_text": "Hamsa Nomads"
+  }
 }

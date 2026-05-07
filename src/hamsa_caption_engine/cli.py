@@ -8,7 +8,7 @@ from .ffmpeg_renderer import render_ffmpeg
 from .paths import ensure_project_dirs
 from .recipe_builder import recipe_from_prompt
 from .recipe_schema import default_recipe, load_recipe, save_recipe
-from .remotion_renderer import render_remotion
+from .remotion_renderer import RemotionRenderError, render_remotion
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -22,6 +22,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--recipe", help="Existing edit_recipe.json")
     parser.add_argument("--prompt", help="Local rule-based prompt to create/update edit_recipe.json")
     parser.add_argument("--auto-cut", action="store_true", help="Detect pauses and save output/cut_plan.json; keeps natural breathing room")
+    parser.add_argument("--logo", help="Optional logo path for FFmpeg/recipe logo overlay, e.g. assets/brand/hamsa-logo.png")
     return parser
 
 
@@ -41,11 +42,18 @@ def main(argv: list[str] | None = None) -> int:
     if args.auto_cut:
         recipe["auto_cut"]["enabled"] = True
         recipe["input_video"]["remove_silence"] = True
+    if args.logo:
+        recipe.setdefault("logo", {})["path"] = args.logo
+        recipe["logo"]["enabled"] = True
     save_recipe(recipe, output_dir / "edit_recipe.json")
     if args.renderer == "remotion":
-        result = render_remotion(video, output_dir, recipe)
+        try:
+            result = render_remotion(video, output_dir, recipe)
+        except RemotionRenderError as exc:
+            print(str(exc), file=sys.stderr)
+            return 1
     else:
-        result = render_ffmpeg(video, output_dir, recipe, transcript_path=args.transcript, thumbnail_at=args.thumbnail_at)
+        result = render_ffmpeg(video, output_dir, recipe, transcript_path=args.transcript, thumbnail_at=args.thumbnail_at, logo_path=args.logo)
     print("Render complete")
     for key, value in result.items():
         print(f"{key}: {value}")
