@@ -1,0 +1,88 @@
+{
+  "project_title": "Show wrong vs right captions for asking for chamour in Paris. Include a ",
+  "brand": "hamsa_nomads",
+  "renderer": "ffmpeg",
+  "output": {
+    "width": 1080,
+    "height": 1920,
+    "fps": 30,
+    "duration_sec": 25,
+    "format": "mp4"
+  },
+  "input_video": {
+    "src": "",
+    "crop": "vertical_center_face",
+    "remove_silence": false
+  },
+  "style": {
+    "name": "wrong-vs-right",
+    "tone": "warm, human, grounded, documentary",
+    "brand_identity": "hamsa_nomads"
+  },
+  "transcription": {
+    "mode": "auto",
+    "model": "base",
+    "language": "auto"
+  },
+  "auto_cut": {
+    "enabled": false,
+    "silence_threshold_db": -35,
+    "min_silence_duration_sec": 0.7,
+    "keep_silence_sec": 0.25
+  },
+  "intro_card": {
+    "enabled": true,
+    "duration_sec": 1.8,
+    "label": "PARIS NOTE",
+    "headline": "Ask like a local",
+    "subheadline": "Chamour, context, and confidence",
+    "motif": "imperfect_route_line"
+  },
+  "caption_system": {
+    "type": "animated_dialogue_box",
+    "position": "lower_third",
+    "max_words_per_caption": 6,
+    "highlight_keywords": [
+      "France",
+      "Paris",
+      "chamour"
+    ]
+  },
+  "overlays": [
+    {
+      "type": "wrong_vs_right",
+      "start_sec": 2.0,
+      "duration_sec": 3.0,
+      "wrong": "WRONG WORD",
+      "right": "LOCAL TIP"
+    }
+  ],
+  "motion": {
+    "punch_in_on_hook": true,
+    "punch_in_on_keywords": true,
+    "subtle_zoom_amount": 1.08,
+    "caption_pop": true,
+    "avoid_cheap_transitions": true
+  },
+  "transitions": [],
+  "section_cards": [
+    {
+      "title": "WRONG WORD",
+      "start_sec": 2.0,
+      "duration_sec": 0.7
+    }
+  ],
+  "freeze_frames": [],
+  "thumbnail": {
+    "enabled": true,
+    "time_sec": 1.5,
+    "headline": "Show wrong vs right captions for asking ",
+    "style": "passport_stamp"
+  },
+  "cta": {
+    "enabled": true,
+    "start_sec": 22,
+    "text": "Follow Hamsa Nomads for Jewish travel tips in France",
+    "style": "clean_brand_end"
+  }
+}

@@ -1,0 +1,81 @@
+{
+  "project_title": "Make this a luxury retreat villa house tour with calm premium documentar",
+  "brand": "hamsa_nomads",
+  "renderer": "remotion",
+  "output": {
+    "width": 1080,
+    "height": 1920,
+    "fps": 30,
+    "duration_sec": 25,
+    "format": "mp4"
+  },
+  "input_video": {
+    "src": "",
+    "crop": "vertical_center_face",
+    "remove_silence": false
+  },
+  "style": {
+    "name": "retreat_luxury",
+    "tone": "warm, human, grounded, documentary",
+    "brand_identity": "hamsa_nomads"
+  },
+  "transcription": {
+    "mode": "auto",
+    "model": "base",
+    "language": "auto"
+  },
+  "auto_cut": {
+    "enabled": false,
+    "silence_threshold_db": -35,
+    "min_silence_duration_sec": 0.7,
+    "keep_silence_sec": 0.25
+  },
+  "intro_card": {
+    "enabled": true,
+    "duration_sec": 1.8,
+    "label": "RETREAT NOTE",
+    "headline": "A calmer kind of luxury",
+    "subheadline": "Warm, grounded, and human",
+    "motif": "imperfect_route_line"
+  },
+  "caption_system": {
+    "type": "animated_dialogue_box",
+    "position": "lower_third",
+    "max_words_per_caption": 6,
+    "highlight_keywords": []
+  },
+  "overlays": [],
+  "motion": {
+    "punch_in_on_hook": true,
+    "punch_in_on_keywords": true,
+    "subtle_zoom_amount": 1.05,
+    "caption_pop": true,
+    "avoid_cheap_transitions": true
+  },
+  "transitions": [
+    {
+      "type": "route_line_wipe",
+      "start_sec": 1.5,
+      "duration_sec": 0.35
+    },
+    {
+      "type": "parchment_card_slide",
+      "start_sec": 4.0,
+      "duration_sec": 0.35
+    }
+  ],
+  "section_cards": [],
+  "freeze_frames": [],
+  "thumbnail": {
+    "enabled": true,
+    "time_sec": 1.5,
+    "headline": "Make this a luxury retreat villa house t",
+    "style": "passport_stamp"
+  },
+  "cta": {
+    "enabled": true,
+    "start_sec": 22,
+    "text": "Follow Hamsa Nomads for Jewish travel tips",
+    "style": "clean_brand_end"
+  }
+}
