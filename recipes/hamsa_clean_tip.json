@@ -1,61 +1,70 @@
 {
-  "project_title": "A Quiet Travel Tip",
-  "video_goal": "Create a clean Hamsa Nomads travel tip with documentary warmth.",
-  "style": "hamsa-clean",
-  "tone": "warm, human, documentary, grounded",
-  "brand": "hamsa",
-  "renderer": "remotion",
-  "intro_card": {
-    "enabled": true,
-    "title": "A Quiet Travel Tip",
-    "label": "JEWISH TRAVEL NOTE",
-    "duration_seconds": 1.5
-  },
-  "captions": [
-    {
-      "start": 2.0,
-      "end": 5.0,
-      "text": "The best travel notes feel human, not perfect."
-    },
-    {
-      "start": 5.2,
-      "end": 8.2,
-      "text": "Look for the side street, then ask gently."
-    }
-  ],
-  "overlays": [
-    {
-      "start": 1.5,
-      "end": 3.0,
-      "text": "LOCAL NOTE",
-      "kind": "passport"
-    }
-  ],
-  "keyword_highlights": [
-    "clean",
-    "tip",
-    "documentary"
-  ],
-  "zooms": [],
-  "screenshots": [
-    {
-      "timestamp": "00:00:02",
-      "label": "clean tip"
-    }
-  ],
-  "thumbnail": {
-    "timestamp": "00:00:02",
-    "title": "Quiet Travel Tip"
-  },
-  "cta": {
-    "text": "Follow Hamsa Nomads for grounded Jewish travel notes.",
-    "start": null
-  },
-  "output_settings": {
+  "project_title": "Make this a clean warm Hamsa Nomads Jewish travel tip with readable capt",
+  "brand": "hamsa_nomads",
+  "renderer": "ffmpeg",
+  "output": {
     "width": 1080,
     "height": 1920,
-    "video_name": "captioned_vertical.mp4",
-    "thumbnail_name": "thumbnail.jpg",
-    "duration_seconds": 16.0
+    "fps": 30,
+    "duration_sec": 25,
+    "format": "mp4"
+  },
+  "input_video": {
+    "src": "",
+    "crop": "vertical_center_face",
+    "remove_silence": false
+  },
+  "style": {
+    "name": "hamsa-clean",
+    "tone": "warm, human, grounded, documentary",
+    "brand_identity": "hamsa_nomads"
+  },
+  "transcription": {
+    "mode": "auto",
+    "model": "base",
+    "language": "auto"
+  },
+  "auto_cut": {
+    "enabled": false,
+    "silence_threshold_db": -35,
+    "min_silence_duration_sec": 0.7,
+    "keep_silence_sec": 0.25
+  },
+  "intro_card": {
+    "enabled": true,
+    "duration_sec": 1.8,
+    "label": "HAMSA NOMADS",
+    "headline": "Make this a clean warm Hamsa Nomads Jewish trave",
+    "subheadline": "Warm local context for your next trip",
+    "motif": "imperfect_route_line"
+  },
+  "caption_system": {
+    "type": "animated_dialogue_box",
+    "position": "lower_third",
+    "max_words_per_caption": 6,
+    "highlight_keywords": []
+  },
+  "overlays": [],
+  "motion": {
+    "punch_in_on_hook": true,
+    "punch_in_on_keywords": true,
+    "subtle_zoom_amount": 1.08,
+    "caption_pop": true,
+    "avoid_cheap_transitions": true
+  },
+  "transitions": [],
+  "section_cards": [],
+  "freeze_frames": [],
+  "thumbnail": {
+    "enabled": true,
+    "time_sec": 1.5,
+    "headline": "Make this a clean warm Hamsa Nomads Jewi",
+    "style": "passport_stamp"
+  },
+  "cta": {
+    "enabled": true,
+    "start_sec": 22,
+    "text": "Follow Hamsa Nomads for Jewish travel tips",
+    "style": "clean_brand_end"
   }
 }

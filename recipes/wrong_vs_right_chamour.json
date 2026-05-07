@@ -1,7 +1,7 @@
 {
-  "project_title": "Make this a luxury retreat villa house tour with calm premium documentar",
+  "project_title": "Show wrong vs right captions for asking for chamour in Paris. Include a ",
   "brand": "hamsa_nomads",
-  "renderer": "remotion",
+  "renderer": "ffmpeg",
   "output": {
     "width": 1080,
     "height": 1920,
@@ -15,7 +15,7 @@
     "remove_silence": false
   },
   "style": {
-    "name": "retreat_luxury",
+    "name": "wrong-vs-right",
     "tone": "warm, human, grounded, documentary",
     "brand_identity": "hamsa_nomads"
   },
@@ -33,49 +33,56 @@
   "intro_card": {
     "enabled": true,
     "duration_sec": 1.8,
-    "label": "RETREAT NOTE",
-    "headline": "A calmer kind of luxury",
-    "subheadline": "Warm, grounded, and human",
+    "label": "PARIS NOTE",
+    "headline": "Ask like a local",
+    "subheadline": "Chamour, context, and confidence",
     "motif": "imperfect_route_line"
   },
   "caption_system": {
     "type": "animated_dialogue_box",
     "position": "lower_third",
     "max_words_per_caption": 6,
-    "highlight_keywords": []
+    "highlight_keywords": [
+      "France",
+      "Paris",
+      "chamour"
+    ]
   },
-  "overlays": [],
+  "overlays": [
+    {
+      "type": "wrong_vs_right",
+      "start_sec": 2.0,
+      "duration_sec": 3.0,
+      "wrong": "WRONG WORD",
+      "right": "LOCAL TIP"
+    }
+  ],
   "motion": {
     "punch_in_on_hook": true,
     "punch_in_on_keywords": true,
-    "subtle_zoom_amount": 1.05,
+    "subtle_zoom_amount": 1.08,
     "caption_pop": true,
     "avoid_cheap_transitions": true
   },
-  "transitions": [
+  "transitions": [],
+  "section_cards": [
     {
-      "type": "route_line_wipe",
-      "start_sec": 1.5,
-      "duration_sec": 0.35
-    },
-    {
-      "type": "parchment_card_slide",
-      "start_sec": 4.0,
-      "duration_sec": 0.35
+      "title": "WRONG WORD",
+      "start_sec": 2.0,
+      "duration_sec": 0.7
     }
   ],
-  "section_cards": [],
   "freeze_frames": [],
   "thumbnail": {
     "enabled": true,
     "time_sec": 1.5,
-    "headline": "Make this a luxury retreat villa house t",
+    "headline": "Show wrong vs right captions for asking ",
     "style": "passport_stamp"
   },
   "cta": {
     "enabled": true,
     "start_sec": 22,
-    "text": "Follow Hamsa Nomads for Jewish travel tips",
+    "text": "Follow Hamsa Nomads for Jewish travel tips in France",
     "style": "clean_brand_end"
   }
 }

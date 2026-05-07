@@ -1,101 +1,56 @@
 @echo off
-setlocal
+setlocal EnableExtensions
 cd /d "%~dp0"
-
-echo ========================================
-echo Hamsa Caption Engine - Windows Installer
-echo ========================================
-echo.
-
+echo Hamsa Nomads Windows installer
 where python >nul 2>nul
 if errorlevel 1 (
-  echo ERROR: Python was not found.
-  echo.
-  echo Install Python 3.11 from:
-  echo https://www.python.org/downloads/windows/
-  echo.
-  echo During install, check: Add python.exe to PATH
-  echo Then double click install_windows.bat again.
+  echo Python was not found. Install Python 3.10+ from python.org, then run this again.
   pause
   exit /b 1
 )
-
 if not exist ".venv\Scripts\python.exe" (
-  echo Creating local Python environment in .venv ...
+  echo Creating .venv...
   python -m venv .venv
-  if errorlevel 1 (
-    echo ERROR: Could not create .venv.
-    pause
-    exit /b 1
-  )
-) else (
-  echo Found existing .venv.
+  if errorlevel 1 goto fail
 )
-
-echo Updating pip ...
-".venv\Scripts\python.exe" -m pip install --upgrade pip
-if errorlevel 1 (
-  echo ERROR: pip update failed.
-  pause
-  exit /b 1
-)
-
-echo Installing Hamsa Caption Engine basic mode ...
-echo Basic mode supports transcript rendering and recipes without Whisper.
-".venv\Scripts\python.exe" -m pip install -e .
-if errorlevel 1 (
-  echo ERROR: basic package install failed.
-  pause
-  exit /b 1
-)
-
-echo.
-echo Optional: install local AI Whisper transcription?
-echo This installs faster-whisper and can take longer on weak PCs.
-echo You can skip this and still use Transcript mode.
-set /p INSTALL_WHISPER="Install Whisper transcription now? Type Y and press Enter, or press Enter to skip: "
+set "PY=.venv\Scripts\python.exe"
+"%PY%" -m pip install --upgrade pip setuptools wheel
+if errorlevel 1 goto fail
+"%PY%" -m pip install -e .
+if errorlevel 1 goto fail
+set /p INSTALL_WHISPER="Install Whisper automatic transcription? Y/N: "
 if /I "%INSTALL_WHISPER%"=="Y" (
-  echo Installing Whisper transcription support ...
-  ".venv\Scripts\python.exe" -m pip install -e ".[whisper]"
-  if errorlevel 1 (
-    echo ERROR: Whisper install failed.
-    echo You can still use transcript mode, or try later:
-    echo   .venv\Scripts\python.exe -m pip install -e .[whisper]
-    pause
-    exit /b 1
-  )
-) else (
-  echo Skipping Whisper. Use transcript mode, or install later with:
-  echo   .venv\Scripts\python.exe -m pip install -e .[whisper]
+  "%PY%" -m pip install -e ".[whisper]"
+  if errorlevel 1 goto fail
 )
-
-echo.
-if exist "ffmpeg.exe" (
-  echo Found ffmpeg.exe in this project folder.
-) else (
-  echo FFmpeg check: ffmpeg.exe is NOT in this project folder.
-  where ffmpeg >nul 2>nul
+set /p SETUP_FFMPEG="Set up FFmpeg locally? Y/N: "
+if /I "%SETUP_FFMPEG%"=="Y" (
+  call download_ffmpeg.bat
+)
+set /p INSTALL_REMOTION="Install Remotion premium renderer? Y/N: "
+if /I "%INSTALL_REMOTION%"=="Y" (
+  where npm >nul 2>nul
   if errorlevel 1 (
-    echo.
-    echo IMPORTANT: FFmpeg is still needed before rendering videos.
-    echo.
-    echo Easy option:
-    echo   1. Download a Windows FFmpeg build.
-    echo   2. Copy ffmpeg.exe into this same folder as install_windows.bat.
-    echo.
-    echo Alternative option:
-    echo   Install FFmpeg system-wide, then reopen this folder and run run_hamsa.bat.
-    echo   With winget, this command often works:
-    echo     winget install --id Gyan.FFmpeg -e
-    echo.
+    echo npm was not found. Install Node.js LTS, then run npm install inside remotion\.
   ) else (
-    echo ffmpeg was found on your Windows PATH, so the app can use it.
-    echo Optional: you may also copy ffmpeg.exe into this folder.
+    pushd remotion
+    npm install
+    popd
   )
 )
-
+set /p SET_TOKEN="Do you want to create/update .env with your Telegram bot token? Y/N: "
+if /I "%SET_TOKEN%"=="Y" (
+  set /p BOT_TOKEN="Paste Telegram bot token: "
+  > .env echo HAMSA_TELEGRAM_BOT_TOKEN=%BOT_TOKEN%
+  echo Token saved to .env. It was not printed back.
+)
+echo Running setup diagnostics...
+"%PY%" -m hamsa_caption_engine.diagnostics
 echo.
-echo Install step finished.
-echo Next: put one MP4 in the input folder, then double click run_hamsa.bat.
-echo.
+echo Next step: Double-click run_bot.bat
 pause
+exit /b 0
+:fail
+echo Installer failed. Read the error above.
+pause
+exit /b 1

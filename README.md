@@ -1,357 +1,177 @@
-# Hamsa Caption Engine
+# Hamsa Nomads Video Automation
 
-A simple Windows tool that turns one MP4 into a vertical `1080x1920` captioned video.
+A Windows-friendly Telegram video-editing bot for Hamsa Nomads. Send the bot a real MP4, give it a prompt, and it builds an `edit_recipe.json`, transcribes with optional local Whisper, renders with reliable FFmpeg by default or optional premium Remotion, then sends back `final_video.mp4`, `thumbnail.jpg`, and the recipe.
 
-- Free and local.
-- No paid APIs.
-- Uses Python, FFmpeg, optional local `faster-whisper` captions, transcript mode, and optional Telegram Bot API access.
-- Designed for weak Windows PCs with Intel graphics by defaulting to CPU-friendly settings.
+No Adobe, Premiere, After Effects, CapCut, CUDA, Nvidia GPU, paid APIs, or cloud rendering are required.
 
-## First-time setup
+## WINDOWS SETUP
 
-Double click:
+### Step 1
+Double-click `install_windows.bat`.
 
-```text
-install_windows.bat
-```
+### Step 2
+When asked, choose:
 
-The installer creates `.venv`, updates pip, and installs the basic project first. Python 3.11 is recommended on Windows.
+- install Whisper: yes if you want automatic transcription
+- setup FFmpeg: yes
+- install Remotion: yes if you want premium animated mode
+- add Telegram token: yes
 
-You also need FFmpeg. The easiest non-technical setup is to put `ffmpeg.exe` in the same folder as `run_hamsa.bat`.
+### Step 3
+Double-click `run_bot.bat`.
 
-If FFmpeg is missing, `install_windows.bat` prints instructions. If you use Winget, this command can install FFmpeg system-wide:
+### Step 4
+In Telegram:
 
-```powershell
-winget install --id Gyan.FFmpeg -e
-```
+- send `/start`
+- send MP4
+- send a prompt or choose `/game` `/paris` `/clean`
+- use `/ffmpeg` or `/remotion`
+- send `/render`
+- receive final video
 
-
-## Install modes
-
-### Basic mode: no Whisper required
-
-Basic mode is installed with:
-
-```powershell
-pip install -e .
-```
-
-This supports the CLI, recipes, ASS subtitle generation, FFmpeg rendering, transcript mode, Telegram bot code, and the optional Remotion project. It does **not** install `faster-whisper`, so it avoids the `ctranslate2` dependency conflict seen with older `faster-whisper` pins.
-
-Use transcript mode in basic installs:
-
-```powershell
-.\.venv\Scripts\python.exe -m hamsa_caption_engine --input input\test.mp4 --transcript input\transcript.txt
-```
-
-### AI transcription mode
-
-AI transcription mode is optional and installs `faster-whisper>=1.1.1,<2`:
-
-```powershell
-pip install -e .[whisper]
-```
-
-If Whisper is not installed and you try automatic transcription, the tool will tell you to use `--transcript transcript.txt` or install with `pip install -e .[whisper]`.
-
-### Python version
-
-Python 3.11 is recommended. Python 3.11.14 is fine; the previous install problem was caused by dependency resolution around older `faster-whisper`/`ctranslate2` pins, not by Python 3.11.
-
-## Everyday local use
-
-### Step 1: put video in `input`
-
-Put one `.mp4` file in this folder:
+Example prompt:
 
 ```text
-input
+Make this like a premium video game quest about asking for chamour in France. Add wrong-vs-right captions and a passport stamp moment.
 ```
 
-Example:
+## Manual token setup
 
-```text
-input\my-video.mp4
-```
+Create `.env` in the project root:
 
-### Step 2: double click `run_hamsa.bat`
-
-The batch file checks Python, checks FFmpeg, finds the first MP4 in `input`, and starts the caption workflow.
-
-### Step 3: choose style
-
-`run_hamsa.bat` asks you to choose:
-
-```text
-1 game
-2 paris-tip
-3 hamsa-clean
-4 wrong-vs-right
-5 video-game-dialogue
-```
-
-Then choose caption mode:
-
-```text
-1 Whisper mode      automatic local captions, slower
-2 Transcript mode   use input\transcript.txt, faster
-```
-
-Basic mode works without Whisper and can render from `input\transcript.txt`. Whisper mode is fully local and free, but it needs the optional install: `pip install -e .[whisper]`. Transcript mode is best for weak PCs when you already typed the captions yourself.
-
-### Step 4: get video from `output`
-
-When the render finishes, the output folder opens automatically.
-
-Files created:
-
-```text
-output\captioned_vertical.mp4
-output\captions.ass
-output\thumbnail.jpg
-output\edit_plan.json
-```
-
-## Telegram bot use
-
-The Telegram bot works in transcript mode first, so `faster-whisper` is still optional. It uses your local Windows PC, Python, and FFmpeg. No paid APIs are used.
-
-### Create the bot in Telegram
-
-1. Open Telegram and message `@BotFather`.
-2. Send `/newbot`.
-3. Follow BotFather's prompts.
-4. Copy the bot token.
-
-### Create `.env`
-
-In the project root, create a file named `.env`:
-
-```text
+```env
 HAMSA_TELEGRAM_BOT_TOKEN=your_token_here
 ```
 
-The `.env` file is ignored by git so your token is not committed.
+Do not commit `.env`. Use `.env.example` as the safe template.
 
-### Run the bot on Windows
+## Install commands
 
-Double click:
-
-```text
-run_bot.bat
-```
-
-The batch file activates `.venv` if it exists, loads `.env`, and runs:
+Basic install:
 
 ```bat
-py -3.11 -m hamsa_caption_engine.telegram_bot
+python -m pip install -e .
 ```
 
-Keep that window open while using the bot.
+Optional Whisper install:
 
-### Use the bot step by step
-
-1. Send `/start` or `/help`.
-2. Send a video file or MP4 document. The bot saves it to `input\test.mp4`.
-3. Send transcript text. The bot saves it to `transcript.txt`. You can also send `/render` to use an existing `transcript.txt`.
-4. Choose a style with `/game`, `/paris`, or `/clean`.
-5. The bot runs the same transcript-mode render command used by the one-click runner.
-6. The bot sends back `output\final_video.mp4` and also sends `output\thumbnail.jpg` if it exists.
-
-Use `/status` any time to check whether the bot sees the video, transcript, selected style, and final output. If rendering fails, the bot sends a simple error and saves full logs to `logs\bot_render.log`.
-
-## Transcript mode
-
-Create this file:
-
-```text
-input\transcript.txt
+```bat
+python -m pip install -e ".[whisper]"
 ```
 
-Put one caption per line:
+The Windows scripts use `.venv\Scripts\python.exe` for runtime and bot commands.
 
-```text
-Welcome to the trip.
-This is the easiest local render mode.
-No paid APIs needed.
+## Bot commands
+
+- `/start` and `/help` explain the workflow.
+- `/auto` enables automatic Whisper transcription.
+- `/transcript` switches to manual transcript mode.
+- `/ffmpeg` selects reliable weak-PC rendering.
+- `/remotion` selects optional premium animated rendering.
+- `/autocut_on` and `/autocut_off` control pause detection and cut-plan generation.
+- `/transitions_on` and `/transitions_off` control transitions.
+- `/game`, `/paris`, `/clean` set a style and render the latest video.
+- `/recipe` shows the current recipe summary.
+- `/render` renders the latest video.
+- `/modify [prompt]` applies local rule-based prompt changes, saves a modified recipe, and renders again.
+- `/status` shows paths, selected renderer/style, transcription mode, imports, FFmpeg, Node/npm, Python executable, and project root.
+
+## Prompt-driven editing rules
+
+The recipe builder is local and rule-based. No paid API is used.
+
+- `video game`, `quest`, `RPG`, `level`, `mission` selects video-game dialogue styling.
+- `Paris`, `France`, `chamour`, `croissant` selects Paris-tip styling.
+- `wrong/right`, `mistake`, `don't say`, `instead` adds a wrong-vs-right overlay.
+- `luxury`, `retreat`, `house`, `villa` selects retreat-luxury styling.
+- `passport`, `travel note`, `stamp` adds passport stamp styling and a freeze-frame moment.
+- `premium animation`, `animated`, `cinematic title`, `smooth`, `premium` selects Remotion transitions.
+- `simple`, `fast`, `weak PC` selects FFmpeg with hard cuts only.
+- `make it faster`, `cut the pauses`, `more dynamic`, `make it punchy`, `reel style` enables auto-cut, jump-cut planning, and punch-in zooms.
+
+## Auto-cut and transitions
+
+Auto-cut detects silent sections with FFmpeg and saves safe metadata to `output\cut_plan.json`. The original MP4 is never destroyed. Defaults:
+
+- silence threshold: `-35 dB`
+- remove silences longer than `0.7s`
+- keep `0.25s` of breathing room
+
+If auto-cut fails, rendering continues with the original video. FFmpeg mode stays simple and reliable. Remotion mode supports richer route-line, passport-stamp, parchment-card, quest-banner, soft-zoom, and text match-cut style transitions.
+
+## CLI examples
+
+Help:
+
+```bat
+.venv\Scripts\python.exe -m hamsa_caption_engine --help
 ```
 
-Then double click `run_hamsa.bat` and choose transcript mode.
+FFmpeg transcript mode:
 
-
-
-## Prompt-driven editing
-
-The tool is **not one fixed template** applied to every video. It now works as a small local recipe engine:
-
-```text
-user prompt + video + optional transcript
-→ edit_recipe.json
-→ FFmpeg render
-→ branded Hamsa Nomads video
+```bat
+.venv\Scripts\python.exe -m hamsa_caption_engine --input input\test.mp4 --output-dir output --style game --transcript transcript.txt --thumbnail-at 00:00:01 --renderer ffmpeg
 ```
 
-Use a prompt to let the tool draft a recipe locally with simple free rules:
+FFmpeg automatic Whisper mode:
 
-```powershell
-.\.venv\Scripts\python.exe -m hamsa_caption_engine --input input\test.mp4 --prompt "Make this feel like a video game quest about ordering kosher croissants in Paris. Use wrong-vs-right captions and a funny Jewish travel tone."
+```bat
+.venv\Scripts\python.exe -m hamsa_caption_engine --input input\test.mp4 --output-dir output_auto --style game --thumbnail-at 00:00:01 --renderer ffmpeg
 ```
 
-The local recipe builder detects style hints and keywords like `Paris`, `game`, `wrong/right`, `luxury`, `retreat`, and `storytime`. It chooses a caption style, creates intro-card text, chooses a CTA, stores keyword highlights, and keeps the edit inside the Hamsa Nomads brand identity. No paid APIs are used.
+Prompt mode:
 
-If no brand is provided, `hamsa` is used by default. You can also force the brand and style explicitly:
-
-```powershell
-.\.venv\Scripts\python.exe -m hamsa_caption_engine --input input\test.mp4 --style paris-tip --brand hamsa
+```bat
+.venv\Scripts\python.exe -m hamsa_caption_engine --input input\test.mp4 --output-dir output_prompt --prompt "Make this a premium video game quest about asking for chamour in Paris. Add wrong-vs-right captions." --renderer remotion
 ```
 
-To add a 1.5-second branded title card before the video, use:
+Remotion recipe mode:
 
-```powershell
-.\.venv\Scripts\python.exe -m hamsa_caption_engine --input input\test.mp4 --style wrong-vs-right --intro-card "Stop saying this in France"
+```bat
+.venv\Scripts\python.exe -m hamsa_caption_engine --input input\test.mp4 --output-dir output_remotion --recipe recipes\paris_chamour_game.json --renderer remotion
 ```
 
-The intro card uses a cream/parchment background, imperfect route line, `JEWISH TRAVEL NOTE` label, big title text, and small Hamsa Nomads logo text before transitioning into the video. It is generated with FFmpeg, not Adobe, Premiere, After Effects, or paid tools.
+## Troubleshooting
 
-To render from a manual recipe:
+Problem: `No module named hamsa_caption_engine`
 
-```powershell
-.\.venv\Scripts\python.exe -m hamsa_caption_engine --input input\test.mp4 --recipe examples\recipes\paris_game_quest.json
+Fix: run `install_windows.bat`. Make sure `run_bot.bat` uses `.venv\Scripts\python.exe`.
+
+Problem: `faster-whisper` missing
+
+Fix:
+
+```bat
+.venv\Scripts\python.exe -m pip install -e ".[whisper]"
 ```
 
-A recipe can control:
+Problem: FFmpeg missing
 
-- `project_title`
-- `video_goal`
-- `style` and `tone`
-- `intro_card`
-- `captions`
-- `overlays`
-- `keyword_highlights`
-- `zooms`
-- `screenshots`
-- `thumbnail`
-- `cta`
-- `output_settings`
+Fix: run `download_ffmpeg.bat` or put `ffmpeg.exe` and `ffprobe.exe` inside `tools\ffmpeg\bin\`.
 
-Example recipes live in:
+Problem: Remotion missing
 
-```text
-examples\recipes
-```
-
-Current rendering uses the recipe for style choice, optional intro card, manual captions, overlay text, screenshot exports, thumbnail timing/name, CTA metadata, and output settings. Zoom fields are included in the schema so recipes can describe richer edits while remaining brand-consistent and Windows-friendly.
-
-
-## Optional Remotion renderer
-
-FFmpeg remains the default renderer and is still the best weak-PC fallback. Remotion is optional for more designed videos and future cloud rendering. Recipes can choose either renderer:
-
-```json
-"renderer": "ffmpeg"
-```
-
-or:
-
-```json
-"renderer": "remotion"
-```
-
-### Windows Remotion setup
-
-1. Install Node.js LTS from <https://nodejs.org/>.
-2. Open Command Prompt in this project folder.
-3. Install the optional Remotion project dependencies:
+Fix:
 
 ```bat
 cd remotion
 npm install
-cd ..
 ```
 
-### Render with Remotion
+Problem: Bot token missing
 
-Use a recipe that has `"renderer": "remotion"`, or override the renderer from the command line:
+Fix: create `.env` with:
 
-```powershell
-.\.venv\Scripts\python.exe -m hamsa_caption_engine --input input\test.mp4 --recipe recipes\paris_chamour_game.json
+```env
+HAMSA_TELEGRAM_BOT_TOKEN=...
 ```
 
-```powershell
-.\.venv\Scripts\python.exe -m hamsa_caption_engine --input input\test.mp4 --prompt "Make this a premium video game dialogue quest in Paris" --renderer remotion
-```
+## Test commands
 
-The Remotion renderer reads `edit_recipe.json` and supports vertical `1080x1920` output, phone video, Hamsa Nomads colors/type, animated intro cards, video-game dialogue captions, wrong-vs-right overlays, passport-stamp overlays, route-line motifs, a CTA end card, and JSON-driven timing.
-
-If Node/Remotion is not installed or the PC is too weak, use the default FFmpeg renderer:
-
-```powershell
-.\.venv\Scripts\python.exe -m hamsa_caption_engine --input input\test.mp4 --recipe examples\recipes\wrong_vs_right_chamour.json --renderer ffmpeg
-```
-
-No paid APIs are used in either renderer. Remotion mode is simply the more designed local renderer; FFmpeg mode remains the lightweight fallback. Python dependencies stay in `pyproject.toml` and `requirements.txt`; Remotion dependencies stay in `remotion/package.json` and are installed separately with `npm install`.
-
-## Brand Identity
-
-Every generated video uses the Hamsa Nomads brand system from:
-
-```text
-brand\hamsa_nomads_brand.json
-```
-
-The brand system defines the warm travel palette (`warm_cream`, `ivory_parchment`, `sand`, `clay`, `olive_sage`, and `ink_black`), typography choices with fallbacks, and the rules for the visual identity. Caption styles are designed to feel warm, human, documentary, natural, connected, and grounded for a Jewish travel network.
-
-The ASS subtitle generator uses that system for all styles:
-
-- `hamsa-clean` uses cream/parchment boxes, ink black text, and subtle olive/clay details.
-- `paris-tip` adds a `PARIS TIP` passport-note label with sand/clay accents.
-- `game` is a warm travel quest card with labels like `QUEST UNLOCKED` and `LOCAL TIP`, not neon arcade styling.
-- `wrong-vs-right` colors wrong phrases in clay and correct phrases in olive/sage.
-- `video-game-dialogue` uses a premium adventure dialogue box with a cream surface and clay/olive border feeling.
-
-The visual signature is an imperfect route/path line with passport/map-inspired motifs. The system intentionally avoids corporate, glossy, neon, childish, or cheap CapCut-style effects. It remains plain FFmpeg + ASS subtitles, so it works locally on Windows without Adobe, Premiere, After Effects, or paid APIs.
-
-## Caption styles
-
-See the visual style guide here:
-
-```text
-styles\README.md
-```
-
-Available styles:
-
-- `game`
-- `paris-tip`
-- `hamsa-clean`
-- `wrong-vs-right`
-- `video-game-dialogue`
-
-## Weak PC tips
-
-- Start with `hamsa-clean` and transcript mode on weak PCs, then install `.[whisper]` only if you want automatic transcription.
-- Use transcript mode for quick tests.
-- Keep test clips short.
-- Close browsers and games before Whisper mode if you install the optional `.[whisper]` extra.
-- Rendering uses CPU x264 settings instead of paid APIs or GPU-only encoders.
-- The Telegram bot processes one video at a time to avoid overloading the PC.
-
-## Advanced command-line use
-
-After running `install_windows.bat`, you can also use:
-
-```powershell
-.\.venv\Scripts\python.exe -m hamsa_caption_engine --style hamsa-clean --model tiny.en
-```
-
-Or with transcript mode:
-
-```powershell
-.\.venv\Scripts\python.exe -m hamsa_caption_engine --style game --transcript input\transcript.txt
-```
-
-To choose a custom output MP4 name:
-
-```powershell
-.\.venv\Scripts\python.exe -m hamsa_caption_engine --style hamsa-clean --video-name final_video.mp4
+```bat
+.venv\Scripts\python.exe -m compileall src
+.venv\Scripts\python.exe -m hamsa_caption_engine --help
+.venv\Scripts\python.exe -c "import hamsa_caption_engine; print('package import works')"
+.venv\Scripts\python.exe -c "from faster_whisper import WhisperModel; print('faster-whisper works')"
 ```

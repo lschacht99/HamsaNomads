@@ -1,75 +1,126 @@
 {
-  "project_title": "Chamour Quest in Paris",
-  "video_goal": "Make a designed Remotion edit about asking for Chamour in Paris like a warm Jewish travel quest.",
-  "style": "video-game-dialogue",
-  "tone": "funny, warm, premium, Jewish travel quest",
-  "brand": "hamsa",
+  "project_title": "Make this like a premium video game quest about asking for chamour in Fr",
+  "brand": "hamsa_nomads",
   "renderer": "remotion",
+  "output": {
+    "width": 1080,
+    "height": 1920,
+    "fps": 30,
+    "duration_sec": 25,
+    "format": "mp4"
+  },
+  "input_video": {
+    "src": "",
+    "crop": "vertical_center_face",
+    "remove_silence": false
+  },
+  "style": {
+    "name": "passport_stamp",
+    "tone": "warm, human, grounded, documentary",
+    "brand_identity": "hamsa_nomads"
+  },
+  "transcription": {
+    "mode": "auto",
+    "model": "base",
+    "language": "auto"
+  },
+  "auto_cut": {
+    "enabled": false,
+    "silence_threshold_db": -35,
+    "min_silence_duration_sec": 0.7,
+    "keep_silence_sec": 0.25
+  },
   "intro_card": {
     "enabled": true,
-    "title": "Chamour Quest in Paris",
-    "label": "JEWISH TRAVEL NOTE",
-    "duration_seconds": 1.5
+    "duration_sec": 1.8,
+    "label": "PARIS NOTE",
+    "headline": "Ask like a local",
+    "subheadline": "Chamour, context, and confidence",
+    "motif": "imperfect_route_line"
   },
-  "captions": [
-    {
-      "start": 1.7,
-      "end": 4.2,
-      "text": "Traveler: We need the right words before we order."
-    },
-    {
-      "start": 4.4,
-      "end": 7.0,
-      "text": "❌ Don’t ask: Cholov Yisroel\n✅ Ask: Chamour"
-    }
-  ],
+  "caption_system": {
+    "type": "animated_dialogue_box",
+    "position": "lower_third",
+    "max_words_per_caption": 6,
+    "highlight_keywords": [
+      "France",
+      "Paris",
+      "chamour"
+    ]
+  },
   "overlays": [
     {
-      "start": 1.5,
-      "end": 3.5,
-      "text": "QUEST UNLOCKED",
-      "kind": "passport"
+      "type": "wrong_vs_right",
+      "start_sec": 2.0,
+      "duration_sec": 3.0,
+      "wrong": "WRONG WORD",
+      "right": "LOCAL TIP"
     },
     {
-      "start": 6.8,
-      "end": 9.0,
-      "text": "LOCAL TIP",
-      "kind": "passport"
+      "type": "passport_stamp",
+      "start_sec": 3.2,
+      "duration_sec": 0.8,
+      "text": "HAMSA APPROVED"
     }
   ],
-  "keyword_highlights": [
-    "Paris",
-    "Chamour",
-    "quest",
-    "kosher"
-  ],
-  "zooms": [
+  "motion": {
+    "punch_in_on_hook": true,
+    "punch_in_on_keywords": true,
+    "subtle_zoom_amount": 1.08,
+    "caption_pop": true,
+    "avoid_cheap_transitions": true
+  },
+  "transitions": [
     {
-      "start": 1.5,
-      "end": 4.5,
-      "scale": 1.04,
-      "anchor": "center"
+      "type": "game_quest_banner_reveal",
+      "start_sec": 1.5,
+      "duration_sec": 0.35
+    },
+    {
+      "type": "passport_stamp_pop",
+      "start_sec": 3.2,
+      "duration_sec": 0.35
+    },
+    {
+      "type": "route_line_wipe",
+      "start_sec": 1.5,
+      "duration_sec": 0.35
+    },
+    {
+      "type": "parchment_card_slide",
+      "start_sec": 4.0,
+      "duration_sec": 0.35
     }
   ],
-  "screenshots": [
+  "section_cards": [
     {
-      "timestamp": "00:00:03",
-      "label": "quest card"
+      "title": "PARIS QUEST",
+      "start_sec": 1.5,
+      "duration_sec": 0.8
+    },
+    {
+      "title": "WRONG WORD",
+      "start_sec": 2.0,
+      "duration_sec": 0.7
+    }
+  ],
+  "freeze_frames": [
+    {
+      "time_sec": 3.2,
+      "duration_sec": 0.5,
+      "overlay": "Passport stamp moment"
     }
   ],
   "thumbnail": {
-    "timestamp": "00:00:03",
-    "title": "Chamour Quest"
+    "enabled": true,
+    "time_sec": 1.5,
+    "headline": "Make this like a premium video game ques",
+    "style": "passport_stamp"
   },
   "cta": {
-    "text": "Follow Hamsa Nomads for the next Jewish travel quest.",
-    "start": null
-  },
-  "output_settings": {
-    "width": 1080,
-    "height": 1920,
-    "video_name": "captioned_vertical.mp4",
-    "thumbnail_name": "thumbnail.jpg",
-    "duration_seconds": 18.0
+    "enabled": true,
+    "start_sec": 22,
+    "text": "Follow Hamsa Nomads for Jewish travel tips in France",
+    "style": "clean_brand_end"
   }
 }

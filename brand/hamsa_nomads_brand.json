@@ -1,5 +1,5 @@
 {
-  "name": "Hamsa Nomads",
+  "brand": "hamsa_nomads",
   "colors": {
     "warm_cream": "#F6F2E7",
     "ivory_parchment": "#ECE7DB",
@@ -9,37 +9,22 @@
     "ink_black": "#111111"
   },
   "typography": {
-    "headline_serif": {
-      "font": "Playfair Display",
-      "fallbacks": ["Georgia", "Times New Roman", "serif"]
-    },
-    "body_sans": {
-      "font": "Montserrat",
-      "fallbacks": ["Arial", "Segoe UI", "sans-serif"]
-    },
-    "accent_handwritten": {
-      "font": "Caveat",
-      "fallbacks": ["Comic Sans MS", "Segoe Print", "cursive"]
-    }
+    "headline_serif": "Playfair Display",
+    "body_sans": "Montserrat",
+    "accent_handwritten": "Caveat",
+    "fallback_serif": "Georgia",
+    "fallback_sans": "Arial",
+    "fallback_handwritten": "Segoe Script"
   },
-  "rules": {
-    "personality": [
-      "warm",
-      "human",
-      "Jewish travel network",
-      "documentary",
-      "natural",
-      "connected",
-      "grounded"
-    ],
-    "visual_signature": "imperfect line",
-    "motifs": ["route", "path", "passport", "map"],
-    "avoid": [
-      "corporate",
-      "glossy",
-      "neon",
-      "childish",
-      "cheap CapCut effects"
-    ]
-  }
+  "rules": [
+    "premium Jewish travel brand",
+    "warm, human, grounded, documentary",
+    "imperfect travel route line is the visual signature",
+    "use map, passport, travel note, route, handwritten motifs",
+    "avoid neon arcade style",
+    "avoid cheap CapCut effects",
+    "avoid corporate glossy effects",
+    "avoid childish design",
+    "keep text readable on Instagram Reels"
+  ]
 }

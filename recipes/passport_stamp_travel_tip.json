@@ -1,7 +1,7 @@
 {
-  "project_title": "Make this a luxury retreat villa house tour with calm premium documentar",
+  "project_title": "Make this a passport stamp travel note with a route line and warm parchm",
   "brand": "hamsa_nomads",
-  "renderer": "remotion",
+  "renderer": "ffmpeg",
   "output": {
     "width": 1080,
     "height": 1920,
@@ -15,7 +15,7 @@
     "remove_silence": false
   },
   "style": {
-    "name": "retreat_luxury",
+    "name": "passport_stamp",
     "tone": "warm, human, grounded, documentary",
     "brand_identity": "hamsa_nomads"
   },
@@ -33,9 +33,9 @@
   "intro_card": {
     "enabled": true,
     "duration_sec": 1.8,
-    "label": "RETREAT NOTE",
-    "headline": "A calmer kind of luxury",
-    "subheadline": "Warm, grounded, and human",
+    "label": "HAMSA NOMADS",
+    "headline": "Make this a passport stamp travel note with a ro",
+    "subheadline": "Warm local context for your next trip",
     "motif": "imperfect_route_line"
   },
   "caption_system": {
@@ -44,32 +44,40 @@
     "max_words_per_caption": 6,
     "highlight_keywords": []
   },
-  "overlays": [],
+  "overlays": [
+    {
+      "type": "passport_stamp",
+      "start_sec": 3.2,
+      "duration_sec": 0.8,
+      "text": "HAMSA APPROVED"
+    }
+  ],
   "motion": {
     "punch_in_on_hook": true,
     "punch_in_on_keywords": true,
-    "subtle_zoom_amount": 1.05,
+    "subtle_zoom_amount": 1.08,
     "caption_pop": true,
     "avoid_cheap_transitions": true
   },
   "transitions": [
     {
-      "type": "route_line_wipe",
-      "start_sec": 1.5,
-      "duration_sec": 0.35
-    },
-    {
-      "type": "parchment_card_slide",
-      "start_sec": 4.0,
+      "type": "passport_stamp_pop",
+      "start_sec": 3.2,
       "duration_sec": 0.35
     }
   ],
   "section_cards": [],
-  "freeze_frames": [],
+  "freeze_frames": [
+    {
+      "time_sec": 3.2,
+      "duration_sec": 0.5,
+      "overlay": "Passport stamp moment"
+    }
+  ],
   "thumbnail": {
     "enabled": true,
     "time_sec": 1.5,
-    "headline": "Make this a luxury retreat villa house t",
+    "headline": "Make this a passport stamp travel note w",
     "style": "passport_stamp"
   },
   "cta": {

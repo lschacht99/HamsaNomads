@@ -8,8 +8,8 @@ export const brand = {
     inkBlack: '#111111',
   },
   fonts: {
-    headline: 'Playfair Display, Georgia, Times New Roman, serif',
-    body: 'Montserrat, Arial, Segoe UI, sans-serif',
-    accent: 'Caveat, Segoe Print, cursive',
+    headline: 'Georgia, Playfair Display, serif',
+    body: 'Arial, Montserrat, sans-serif',
+    handwritten: 'Segoe Script, Caveat, cursive',
   },
 };

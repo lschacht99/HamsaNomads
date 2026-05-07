@@ -4,18 +4,19 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "hamsa-caption-engine"
-version = "0.1.0"
-description = "Windows-friendly local vertical video caption engine with FFmpeg, local Whisper transcription, recipes, Telegram, and optional Remotion rendering."
+version = "0.2.0"
+description = "Windows-friendly local Telegram video editing bot with FFmpeg, optional Whisper, prompt recipes, and optional Remotion."
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
-  "python-telegram-bot>=21.0",
+  "python-telegram-bot>=21.0,<22",
 ]
 keywords = ["ffmpeg", "captions", "whisper", "telegram", "remotion", "video"]
 
 [project.optional-dependencies]
 whisper = [
   "faster-whisper>=1.1.1,<2",
+  "ctranslate2>=4,<5",
 ]
 
 [project.scripts]
