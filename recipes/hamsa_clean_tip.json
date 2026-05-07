@@ -1,0 +1,61 @@
+{
+  "project_title": "A Quiet Travel Tip",
+  "video_goal": "Create a clean Hamsa Nomads travel tip with documentary warmth.",
+  "style": "hamsa-clean",
+  "tone": "warm, human, documentary, grounded",
+  "brand": "hamsa",
+  "renderer": "remotion",
+  "intro_card": {
+    "enabled": true,
+    "title": "A Quiet Travel Tip",
+    "label": "JEWISH TRAVEL NOTE",
+    "duration_seconds": 1.5
+  },
+  "captions": [
+    {
+      "start": 2.0,
+      "end": 5.0,
+      "text": "The best travel notes feel human, not perfect."
+    },
+    {
+      "start": 5.2,
+      "end": 8.2,
+      "text": "Look for the side street, then ask gently."
+    }
+  ],
+  "overlays": [
+    {
+      "start": 1.5,
+      "end": 3.0,
+      "text": "LOCAL NOTE",
+      "kind": "passport"
+    }
+  ],
+  "keyword_highlights": [
+    "clean",
+    "tip",
+    "documentary"
+  ],
+  "zooms": [],
+  "screenshots": [
+    {
+      "timestamp": "00:00:02",
+      "label": "clean tip"
+    }
+  ],
+  "thumbnail": {
+    "timestamp": "00:00:02",
+    "title": "Quiet Travel Tip"
+  },
+  "cta": {
+    "text": "Follow Hamsa Nomads for grounded Jewish travel notes.",
+    "start": null
+  },
+  "output_settings": {
+    "width": 1080,
+    "height": 1920,
+    "video_name": "captioned_vertical.mp4",
+    "thumbnail_name": "thumbnail.jpg",
+    "duration_seconds": 16.0
+  }
+}
