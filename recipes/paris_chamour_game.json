@@ -1,0 +1,75 @@
+{
+  "project_title": "Chamour Quest in Paris",
+  "video_goal": "Make a designed Remotion edit about asking for Chamour in Paris like a warm Jewish travel quest.",
+  "style": "video-game-dialogue",
+  "tone": "funny, warm, premium, Jewish travel quest",
+  "brand": "hamsa",
+  "renderer": "remotion",
+  "intro_card": {
+    "enabled": true,
+    "title": "Chamour Quest in Paris",
+    "label": "JEWISH TRAVEL NOTE",
+    "duration_seconds": 1.5
+  },
+  "captions": [
+    {
+      "start": 1.7,
+      "end": 4.2,
+      "text": "Traveler: We need the right words before we order."
+    },
+    {
+      "start": 4.4,
+      "end": 7.0,
+      "text": "❌ Don’t ask: Cholov Yisroel\n✅ Ask: Chamour"
+    }
+  ],
+  "overlays": [
+    {
+      "start": 1.5,
+      "end": 3.5,
+      "text": "QUEST UNLOCKED",
+      "kind": "passport"
+    },
+    {
+      "start": 6.8,
+      "end": 9.0,
+      "text": "LOCAL TIP",
+      "kind": "passport"
+    }
+  ],
+  "keyword_highlights": [
+    "Paris",
+    "Chamour",
+    "quest",
+    "kosher"
+  ],
+  "zooms": [
+    {
+      "start": 1.5,
+      "end": 4.5,
+      "scale": 1.04,
+      "anchor": "center"
+    }
+  ],
+  "screenshots": [
+    {
+      "timestamp": "00:00:03",
+      "label": "quest card"
+    }
+  ],
+  "thumbnail": {
+    "timestamp": "00:00:03",
+    "title": "Chamour Quest"
+  },
+  "cta": {
+    "text": "Follow Hamsa Nomads for the next Jewish travel quest.",
+    "start": null
+  },
+  "output_settings": {
+    "width": 1080,
+    "height": 1920,
+    "video_name": "captioned_vertical.mp4",
+    "thumbnail_name": "thumbnail.jpg",
+    "duration_seconds": 18.0
+  }
+}
