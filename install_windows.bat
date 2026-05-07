@@ -14,8 +14,30 @@ if not exist ".venv\Scripts\python.exe" (
   if errorlevel 1 goto fail
 )
 set "PY=.venv\Scripts\python.exe"
+
+echo Checking virtual environment pip...
+"%PY%" -m pip --version >nul 2>nul
+if errorlevel 1 (
+  echo The virtual environment is corrupted. Rebuilding .venv...
+  rmdir /s /q .venv
+  py -3.11 -m venv .venv
+  if errorlevel 1 (
+    echo Failed to rebuild .venv with py -3.11. Install Python 3.11 or repair the Python launcher, then run this again.
+    goto fail
+  )
+  set "PY=.venv\Scripts\python.exe"
+  "%PY%" -m ensurepip --upgrade
+  if errorlevel 1 goto fail
+)
+
 "%PY%" -m pip install --upgrade pip setuptools wheel
-if errorlevel 1 goto fail
+if errorlevel 1 (
+  echo pip upgrade failed. Trying ensurepip repair once...
+  "%PY%" -m ensurepip --upgrade
+  if errorlevel 1 goto fail
+  "%PY%" -m pip install --upgrade pip setuptools wheel
+  if errorlevel 1 goto fail
+)
 "%PY%" -m pip install -e .
 if errorlevel 1 goto fail
 set /p INSTALL_WHISPER="Install Whisper automatic transcription? Y/N: "
