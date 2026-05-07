@@ -1,0 +1,58 @@
+{
+  "project_title": "Kosher Croissant Quest",
+  "video_goal": "Make this feel like a video game quest about ordering kosher croissants in Paris.",
+  "style": "game",
+  "tone": "funny, warm, Jewish travel, quest-like",
+  "brand": "hamsa",
+  "intro_card": {
+    "enabled": true,
+    "title": "Kosher Croissant Quest",
+    "label": "JEWISH TRAVEL NOTE",
+    "duration_seconds": 1.5
+  },
+  "captions": [],
+  "overlays": [
+    {
+      "start": 1.5,
+      "end": 4.5,
+      "text": "QUEST UNLOCKED",
+      "kind": "label"
+    }
+  ],
+  "keyword_highlights": [
+    "Paris",
+    "kosher",
+    "croissants",
+    "quest"
+  ],
+  "zooms": [
+    {
+      "start": 2.0,
+      "end": 4.0,
+      "scale": 1.03,
+      "anchor": "center"
+    }
+  ],
+  "screenshots": [
+    {
+      "timestamp": "00:00:02",
+      "label": "quest moment"
+    }
+  ],
+  "thumbnail": {
+    "timestamp": "00:00:02",
+    "title": "Kosher Croissant Quest"
+  },
+  "cta": {
+    "text": "Follow Hamsa Nomads for the next Jewish travel quest.",
+    "start": null
+  },
+  "output_settings": {
+    "width": 1080,
+    "height": 1920,
+    "video_name": "captioned_vertical.mp4",
+    "thumbnail_name": "thumbnail.jpg",
+    "duration_seconds": 30.0
+  },
+  "renderer": "ffmpeg"
+}
