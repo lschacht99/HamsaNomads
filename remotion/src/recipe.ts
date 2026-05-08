@@ -1,0 +1,21 @@
+export type Overlay = {type: string; start_sec?: number; duration_sec?: number; text?: string; wrong?: string; right?: string};
+export type Beat = {start_sec?: number; end_sec?: number; purpose?: string; visual_action?: string; text?: string};
+export type TimelineClip = {type?: string; clip_id?: string; source?: string; source_start_sec?: number; source_end_sec?: number; timeline_start_sec?: number; timeline_end_sec?: number; reason?: string};
+export type Recipe = {
+  project_title: string;
+  renderer: string;
+  input_video: {src: string; crop: string};
+  timeline?: TimelineClip[];
+  edit_decision_list?: {timeline?: Array<Record<string, unknown>>; transitions?: Array<Record<string, unknown>>};
+  style: {name: string; tone: string};
+  logo?: {enabled: boolean; position: string; watermark: boolean; path: string; fallback_text?: string};
+  intro_card: {enabled: boolean; style?: string; duration_sec: number; label: string; headline: string; subheadline: string};
+  caption_system: {highlight_keywords: string[]; keyword_highlights?: {word: string; style: string; color: string}[]; box_style?: string; theme?: string; type?: string; max_words_per_caption?: number};
+  beat_map?: Beat[];
+  overlays: Overlay[];
+  transitions: Overlay[];
+  section_cards: {title: string; start_sec: number; duration_sec: number}[];
+  freeze_frames: {time_sec: number; duration_sec: number; overlay: string}[];
+  thumbnail: {headline: string};
+  cta: {enabled: boolean; start_sec: number; text: string; style?: string};
+};
