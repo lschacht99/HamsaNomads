@@ -20,7 +20,7 @@ export const HamsaVideo: React.FC<{inputVideoSrc: string; recipe: Recipe; logoSr
       <AbsoluteFill style={{background: 'linear-gradient(180deg, rgba(17,17,17,.10), transparent 24%, transparent 72%, rgba(17,17,17,.22))'}} />
       <RouteLine />
       {recipe.logo?.watermark && <AbsoluteFill style={{alignItems: 'flex-end', justifyContent: 'flex-end', padding: 44, opacity: .34}}><BrandLogo src={logoSrc} fallback={logoFallback} size="small" /></AbsoluteFill>}
-      {recipe.intro_card?.enabled && <IntroCard intro={recipe.intro_card} logoSrc={logoSrc} logoFallback={logoFallback} />}
+      {recipe.intro_card?.enabled && <IntroCard intro={recipe.intro_card} beatMap={recipe.beat_map} logoSrc={logoSrc} logoFallback={logoFallback} />}
       <QuestBanner recipe={recipe} logoSrc={logoSrc} logoFallback={logoFallback} />
       <CaptionDialogueBox recipe={recipe} />
       {recipe.overlays?.map((overlay, index) => overlay.type === 'wrong_vs_right' ? <WrongVsRightOverlay key={index} overlay={overlay} /> : null)}

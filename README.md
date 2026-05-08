@@ -28,7 +28,8 @@ In Telegram:
 - send a prompt or choose `/game` `/paris` `/clean`
 - use `/ffmpeg` or `/remotion`
 - send `/render`
-- receive final video
+- receive the Telegram-friendly video copy, thumbnail, and recipe
+- use `/local_output` if Telegram upload times out; the full render stays in `output/final_video.mp4`
 
 Example prompt:
 
@@ -125,20 +126,62 @@ Example recipe caption design:
 }
 ```
 
+
+## How the content-aware editor works
+
+The pipeline is now:
+
+`Video(s) → transcript → scene detection → keyframes → visual analysis → content analysis → edit decision list → recipe → render`
+
+Important concepts:
+
+- **Remotion is only the renderer.** The director layer is the transcript, scene map, keyframes, visual analysis, prompt, brand rules, content analysis, and edit decision list.
+- `output/content_analysis.json` explains why the edit should use a certain hook, style, overlay, CTA, and thumbnail.
+- `output/edit_decision_list.json` controls selected clips, cut points, transitions, overlays, punch-ins/freeze-frame ideas, and timeline order.
+- `output/edit_recipe.json` is the renderer control panel for FFmpeg or Remotion.
+- `/modify` updates the recipe with a new prompt, but the recipe remains connected to the analyzed content.
+
+Telegram test flow:
+
+1. Send one video or multiple videos.
+2. Send `/analyze`.
+3. Send `/recipe`.
+4. Send `/modify make it more premium and connected to the content`.
+5. Send `/render`.
+
+Local CLI examples:
+
+```bat
+.venv\Scripts\python.exe -m compileall src
+.venv\Scripts\python.exe -m hamsa_caption_engine --help
+.venv\Scripts\python.exe -m hamsa_caption_engine --input input\test.mp4 --output-dir output_test --style hamsa-clean --renderer ffmpeg --auto-cut
+.venv\Scripts\python.exe -m hamsa_caption_engine --input input\test.mp4 --output-dir output_remotion_test --style hamsa-clean --renderer remotion --auto-cut
+.venv\Scripts\python.exe -m hamsa_caption_engine --inputs input\clip1.mp4 input\clip2.mp4 --output-dir output_multi_test --renderer ffmpeg --auto-cut
+```
+
+Visual AI modes are optional and local-only: `/visual_none`, `/visual_smol`, and `/visual_qwen`. If SmolVLM2 or Qwen2.5-VL is not installed, the bot continues with transcript, scene, filename, prompt, and keyframe metadata analysis.
+
 ## Bot commands
 
 - `/start` and `/help` explain the workflow.
+- `/new_project` and `/clear` reset the current multi-video session.
+- `/add_video` reminds you to send MP4/MOV/M4V files; videos are also accepted automatically.
+- `/videos` lists videos currently saved in the session.
 - `/auto` enables automatic Whisper transcription.
 - `/transcript` switches to manual transcript mode.
 - `/ffmpeg` selects reliable weak-PC rendering.
 - `/remotion` selects optional premium animated rendering.
 - `/autocut_on` and `/autocut_off` control pause detection and cut-plan generation.
+- `/visual_none`, `/visual_smol`, and `/visual_qwen` choose no local VLM, SmolVLM2, or Qwen2.5-VL keyframe analysis.
 - `/transitions_on` and `/transitions_off` control transitions.
-- `/game`, `/paris`, `/clean` set a style and render the latest video.
+- `/game`, `/paris`, `/clean` set a style for the next analysis/render.
 - `/recipe` shows the current recipe summary.
-- `/render` renders the latest video.
+- `/analyze` normalizes all session videos, transcribes, detects scenes, extracts keyframes, runs optional visual analysis, writes content analysis/EDL/recipe, and summarizes the director plan.
+- `/render` renders the current analyzed recipe.
+- `/local_output` lists `final_video.mp4`, `final_video_telegram.mp4`, `edit_recipe.json`, `content_analysis.json`, `edit_decision_list.json`, and `thumbnail.jpg`.
 - `/modify [prompt]` applies local rule-based prompt changes, saves a modified recipe, and renders again.
-- `/status` shows paths, selected renderer/style, transcription mode, imports, FFmpeg, Node/npm, Python executable, and project root.
+- `/status` shows paths, selected renderer/style, visual mode, transcription mode, imports, FFmpeg, Node/npm, Python executable, and project root.
+- `/cancel` stops the current chat flow message and lets you inspect or start over.
 
 ## Prompt-driven editing rules
 

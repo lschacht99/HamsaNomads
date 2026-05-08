@@ -11,6 +11,8 @@ DEFAULT_RECIPE: dict[str, Any] = {
     "renderer": "ffmpeg",
     "output": {"width": 1080, "height": 1920, "fps": 30, "duration_sec": 25, "format": "mp4"},
     "input_video": {"src": "", "crop": "vertical_center_face", "remove_silence": False},
+    "timeline": [],
+    "edit_decision_list": {},
     "style": {"name": "hamsa-clean", "tone": "warm, human, grounded, documentary", "brand_identity": "hamsa_nomads"},
     "logo": {"enabled": True, "position": "top_center", "watermark": False, "path": "assets/brand/hamsa-logo.png", "fallback_text": "Hamsa Nomads"},
     "transcription": {"mode": "auto", "model": "base", "language": "auto"},
@@ -38,7 +40,10 @@ DEFAULT_RECIPE: dict[str, Any] = {
         "highlight_keywords": [],
         "keyword_highlights": [],
     },
+    "captions": [],
     "overlays": [],
+    "beat_map": [],
+    "content_analysis": {},
     "motion": {
         "punch_in_on_hook": True,
         "punch_in_on_keywords": True,
@@ -124,6 +129,8 @@ def recipe_summary(recipe: dict[str, Any]) -> str:
         f"- renderer: {recipe.get('renderer', 'ffmpeg')}",
         f"- style: {recipe.get('style', {}).get('name', 'hamsa-clean')}",
         f"- intro: {recipe.get('intro_card', {}).get('headline', '')}",
+        f"- caption style: {recipe.get('caption_system', {}).get('type', 'animated_dialogue_box')}",
         f"- overlays: {', '.join(o.get('type', 'overlay') for o in overlays) if overlays else 'none'}",
         f"- CTA: {recipe.get('cta', {}).get('text', '')}",
+        f"- thumbnail: {recipe.get('thumbnail', {}).get('headline', '')}",
     ])

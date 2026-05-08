@@ -6,6 +6,7 @@ import subprocess
 from pathlib import Path
 from typing import Any
 
+from .content_analysis import analyze_transcript, save_content_analysis
 from .paths import ROOT, find_ffmpeg
 from .recipe_schema import save_recipe, validate_recipe
 from .transcription import load_manual_transcript, save_transcript, segments_from_transcript_text, transcribe_with_whisper
@@ -156,6 +157,30 @@ def _detect_cut_plan(video_path: Path, output_dir: Path, recipe: dict[str, Any],
     return plan
 
 
+
+def _assemble_timeline(ffmpeg: str, recipe: dict[str, Any], output_dir: Path, notes: list[str]) -> Path | None:
+    clips = [entry for entry in recipe.get("timeline", []) if entry.get("type", "video_clip") == "video_clip" and entry.get("source")]
+    if not clips:
+        return None
+    segment_paths: list[Path] = []
+    for index, clip in enumerate(clips, start=1):
+        source = Path(clip["source"])
+        if not source.is_absolute():
+            source = ROOT / source
+        start = float(clip.get("source_start_sec", 0.0))
+        end = float(clip.get("source_end_sec", start))
+        duration = max(0.1, end - start)
+        segment = output_dir / f"timeline_segment_{index:03d}.mp4"
+        cmd = [ffmpeg, "-y", "-ss", f"{start:.2f}", "-i", str(source), "-t", f"{duration:.2f}", "-c:v", "libx264", "-pix_fmt", "yuv420p", "-c:a", "aac", "-ar", "44100", "-ac", "2", str(segment)]
+        subprocess.run(cmd, check=True)
+        segment_paths.append(segment)
+    concat_file = output_dir / "timeline_concat.txt"
+    concat_file.write_text("\n".join(f"file '{path.as_posix()}'" for path in segment_paths), encoding="utf-8")
+    assembled = output_dir / "assembly_input.mp4"
+    subprocess.run([ffmpeg, "-y", "-f", "concat", "-safe", "0", "-i", str(concat_file), "-c", "copy", str(assembled)], check=True)
+    notes.append(f"timeline assembly used {len(segment_paths)} content-aware clips")
+    return assembled
+
 def render_ffmpeg(video_path: str | Path, output_dir: str | Path, recipe: dict[str, Any], *, transcript_path: str | Path | None = None, thumbnail_at: str = "00:00:01", logo_path: str | Path | None = None) -> dict[str, Any]:
     ffmpeg = find_ffmpeg()
     if not ffmpeg:
@@ -169,10 +194,17 @@ def render_ffmpeg(video_path: str | Path, output_dir: str | Path, recipe: dict[s
     if logo_path:
         recipe.setdefault("logo", {})["path"] = str(logo_path)
     notes: list[str] = []
-    _detect_cut_plan(video, out, recipe, notes)
+    assembled = _assemble_timeline(ffmpeg, recipe, out, notes)
+    if assembled:
+        video = assembled
+        recipe["input_video"]["src"] = str(video)
+    else:
+        _detect_cut_plan(video, out, recipe, notes)
 
     if transcript_path:
         transcript = load_manual_transcript(transcript_path)
+    elif recipe.get("captions"):
+        transcript = {"mode": "recipe", "segments": recipe.get("captions", []), "text": " ".join(segment.get("text", "") for segment in recipe.get("captions", []))}
     else:
         try:
             transcript = transcribe_with_whisper(video, model=recipe.get("transcription", {}).get("model", "base"), language=recipe.get("transcription", {}).get("language", "auto"))
@@ -180,6 +212,10 @@ def render_ffmpeg(video_path: str | Path, output_dir: str | Path, recipe: dict[s
             transcript = {"mode": "fallback", "segments": segments_from_transcript_text(recipe.get("intro_card", {}).get("headline", "Hamsa Nomads travel tip")), "text": ""}
             notes.append("automatic transcription unavailable; used branded fallback captions")
     save_transcript(transcript, out / "transcript.json")
+    analysis = recipe.get("content_analysis") or analyze_transcript(transcript)
+    save_content_analysis(analysis, out / "content_analysis.json")
+    recipe["content_analysis"] = analysis
+    recipe["captions"] = transcript.get("segments", [])
     ass = write_ass(transcript.get("segments", []), recipe, out / "captions.ass")
     save_recipe(recipe, out / "edit_recipe.json")
 
@@ -196,4 +232,4 @@ def render_ffmpeg(video_path: str | Path, output_dir: str | Path, recipe: dict[s
     subprocess.run(cmd, check=True)
     thumb = out / "thumbnail.jpg"
     subprocess.run([ffmpeg, "-y", "-ss", thumbnail_at, "-i", str(video), "-frames:v", "1", "-vf", f"scale={VIDEO_W}:{VIDEO_H}:force_original_aspect_ratio=increase,crop={VIDEO_W}:{VIDEO_H}", str(thumb)], check=True)
-    return {"final_video": final, "thumbnail": thumb, "recipe": out / "edit_recipe.json", "transcript": out / "transcript.json", "notes": notes}
+    return {"final_video": final, "thumbnail": thumb, "recipe": out / "edit_recipe.json", "transcript": out / "transcript.json", "content_analysis": out / "content_analysis.json", "notes": notes}

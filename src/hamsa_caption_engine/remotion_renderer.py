@@ -8,6 +8,7 @@ from typing import Any
 
 from .paths import LOG_DIR, REMOTION_DIR, ROOT, find_executable, find_ffmpeg
 from .recipe_schema import save_recipe, validate_recipe
+from .ffmpeg_renderer import _assemble_timeline
 
 REMOTION_DEPS_MISSING = "Remotion dependencies are not installed. Run install_windows.bat and choose Remotion install, or run npm install inside the remotion folder."
 REMOTION_MISSING = "Remotion is not installed. Run install_windows.bat and choose Remotion install, or run npm install inside remotion/."
@@ -214,6 +215,11 @@ def render_remotion(video_path: str | Path, output_dir: str | Path, recipe: dict
 
     recipe = validate_recipe(recipe)
     recipe["renderer"] = "remotion"
+    if recipe.get("timeline") and ffmpeg:
+        assembled = _assemble_timeline(ffmpeg, recipe, out, [])
+        if assembled:
+            input_path = assembled.resolve()
+            recipe["input_video"]["src"] = str(input_path)
     output_recipe_path = save_recipe(recipe, (out / "edit_recipe.json").resolve()).resolve()
     output_path = (out / "final_video.mp4").resolve()
     output_path.parent.mkdir(parents=True, exist_ok=True)

@@ -1,12 +1,17 @@
 import React from 'react';
-import {AbsoluteFill, interpolate, useCurrentFrame} from 'remotion';
+import {AbsoluteFill, interpolate, useCurrentFrame, useVideoConfig} from 'remotion';
 import {brand} from '../brand';
 import {BrandLogo} from './BrandLogo';
 
-export const IntroCard: React.FC<{intro: any; logoSrc?: string; logoFallback?: string}> = ({intro, logoSrc, logoFallback}) => {
+export const IntroCard: React.FC<{intro: any; beatMap?: any[]; logoSrc?: string; logoFallback?: string}> = ({intro, beatMap = [], logoSrc, logoFallback}) => {
   const frame = useCurrentFrame();
-  const opacity = interpolate(frame, [0, 10, 55, 70], [0, 1, 1, 0], {extrapolateLeft: 'clamp', extrapolateRight: 'clamp'});
-  const scale = interpolate(frame, [0, 14], [0.96, 1], {extrapolateLeft: 'clamp', extrapolateRight: 'clamp'});
+  const {fps} = useVideoConfig();
+  const hookBeat = beatMap.find((beat: any) => beat.purpose === 'hook' || beat.visual_action === 'intro_overlay');
+  const startFrame = Math.round(Number(hookBeat?.start_sec ?? 0) * fps);
+  const endFrame = Math.round(Number(hookBeat?.end_sec ?? intro.duration_sec ?? 1.5) * fps);
+  const opacity = interpolate(frame, [startFrame, startFrame + 10, Math.max(startFrame + 12, endFrame - 12), endFrame], [0, 1, 1, 0], {extrapolateLeft: 'clamp', extrapolateRight: 'clamp'});
+  const scale = interpolate(frame, [startFrame, startFrame + 14], [0.96, 1], {extrapolateLeft: 'clamp', extrapolateRight: 'clamp'});
+  if (frame > endFrame) return null;
   return <AbsoluteFill style={{justifyContent: 'center', alignItems: 'center', opacity}}>
     <div style={{transform: `scale(${scale})`, background: `linear-gradient(180deg, ${brand.colors.warmCream}, ${brand.colors.ivoryParchment})`, color: brand.colors.inkBlack, width: 860, padding: 54, borderRadius: 34, border: `5px solid ${brand.colors.clay}`, boxShadow: '0 20px 60px rgba(0,0,0,.28)'}}>
       <div style={{display: 'flex', justifyContent: 'center', marginBottom: 28}}><BrandLogo src={logoSrc} fallback={logoFallback} size="small" /></div>

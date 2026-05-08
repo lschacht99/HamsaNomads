@@ -14,6 +14,13 @@ dependencies = [
 keywords = ["ffmpeg", "captions", "whisper", "telegram", "remotion", "video"]
 
 [project.optional-dependencies]
+director = [
+  "scenedetect[opencv]>=0.6.4,<1",
+]
+visual = [
+  "transformers>=4.45,<5",
+  "pillow>=10,<12",
+]
 whisper = [
   "faster-whisper>=1.1.1,<2",
   "ctranslate2>=4,<5",

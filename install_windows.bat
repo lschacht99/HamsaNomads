@@ -20,9 +20,9 @@ echo Checking virtual environment pip...
 if errorlevel 1 (
   echo The virtual environment is corrupted. Rebuilding .venv...
   rmdir /s /q .venv
-  py -3.11 -m venv .venv
+  python -m venv .venv
   if errorlevel 1 (
-    echo Failed to rebuild .venv with py -3.11. Install Python 3.11 or repair the Python launcher, then run this again.
+    echo Failed to rebuild .venv. Install Python 3.10+ or repair your Python install, then run this again.
     goto fail
   )
   set "PY=.venv\Scripts\python.exe"
