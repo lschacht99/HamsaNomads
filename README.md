@@ -161,6 +161,32 @@ Local CLI examples:
 
 Visual AI modes are optional and local-only: `/visual_none`, `/visual_smol`, and `/visual_qwen`. If SmolVLM2 or Qwen2.5-VL is not installed, the bot continues with transcript, scene, filename, prompt, and keyframe metadata analysis.
 
+
+Telegram `/start` and `/help` show this step structure:
+
+```text
+Hamsa Video Editor Workflow:
+
+Step 1 — Send video
+Upload one or more MP4/MOV videos.
+
+Step 2 — Analyze
+Send /analyze
+
+Step 3 — Review
+Send /recipe
+
+Step 4 — Modify
+Example:
+/modify make it more premium, speech locked, use black logo, and add route-line transitions
+
+Step 5 — Render
+Send /render
+
+Step 6 — Get final video
+The bot sends the finished video back.
+```
+
 ## Bot commands
 
 - `/start` and `/help` explain the workflow.
@@ -179,7 +205,7 @@ Visual AI modes are optional and local-only: `/visual_none`, `/visual_smol`, and
 - `/analyze` normalizes all session videos, transcribes, detects scenes, extracts keyframes, runs optional visual analysis, writes content analysis/EDL/recipe, and summarizes the director plan.
 - `/render` renders the current analyzed recipe.
 - `/local_output` lists `final_video.mp4`, `final_video_telegram.mp4`, `edit_recipe.json`, `content_analysis.json`, `edit_decision_list.json`, and `thumbnail.jpg`.
-- `/modify [prompt]` applies local rule-based prompt changes, saves a modified recipe, and renders again.
+- `/modify [prompt]` applies local rule-based prompt changes, saves a modified recipe, lists what changed/stayed the same, and points you to `/render`.
 - `/status` shows paths, selected renderer/style, visual mode, transcription mode, imports, FFmpeg, Node/npm, Python executable, and project root.
 - `/cancel` stops the current chat flow message and lets you inspect or start over.
 

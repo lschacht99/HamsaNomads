@@ -69,26 +69,100 @@ def _log_upload_event(event: str, **details: Any) -> None:
 
 
 def help_text() -> str:
-    return """Send one or more videos. I analyze transcript, scenes, keyframes, visuals, and your prompt before building a content-aware edit recipe. Remotion is renderer only; FFmpeg remains available.
+    return """Hamsa Video Editor Workflow:
 
-Commands:
-/start /help
-/new_project /clear - start over
-/add_video - send videos any time
-/videos - list current session clips
-/auto - automatic Whisper transcription
-/transcript - manual transcript mode
-/ffmpeg - fast weak-PC mode
-/remotion - premium animated mode
-/autocut_on /autocut_off
-/visual_none /visual_smol /visual_qwen
-/transitions_on /transitions_off
-/game /paris /clean
-/analyze - transcribe/analyze latest video
-/recipe /render /rerender
-/modify your prompt
-/local_output - show latest local output files
-/status /cancel"""
+Step 1 — Send video
+Upload one or more MP4/MOV videos.
+
+Step 2 — Analyze
+Send /analyze
+
+Step 3 — Review
+Send /recipe
+
+Step 4 — Modify
+Example:
+/modify make it more premium, speech locked, use black logo, and add route-line transitions
+
+Step 5 — Render
+Send /render
+
+Step 6 — Get final video
+The bot sends the finished video back.
+
+Quick commands:
+- /ffmpeg = reliable fast mode
+- /remotion = premium animated mode
+- /auto = automatic transcription
+- /autocut_on = cut dead pauses
+- /status = check setup
+- /local_output = show saved files"""
+
+
+def unknown_command_text() -> str:
+    return """Command not recognized.
+
+Use this workflow:
+Step 1: Send video
+Step 2: /analyze
+Step 3: /recipe
+Step 4: /modify your changes
+Step 5: /render
+
+Or send /help."""
+
+
+def _recipe_review_text(recipe: dict[str, Any]) -> str:
+    transitions = recipe.get("transitions", [])
+    overlays = recipe.get("overlays", [])
+    intro = recipe.get("intro_card", {})
+    logo = recipe.get("logo", {})
+    cta = recipe.get("cta", {})
+    return "\n".join([
+        "Step 3 — Current Edit Recipe",
+        f"- style: {recipe.get('style', {}).get('name', 'hamsa-clean')}",
+        f"- renderer: {recipe.get('renderer', 'ffmpeg')}",
+        f"- caption system: {recipe.get('caption_system', {}).get('type', 'premium_travel_note')}",
+        f"- intro behavior: {intro.get('label', '')} — {intro.get('headline', '')}",
+        f"- logo variant: {logo.get('fallback_text', 'Hamsa Nomads')} ({logo.get('position', 'top_center')})",
+        f"- transitions: {', '.join(item.get('type', 'transition') for item in transitions) if transitions else 'none'}",
+        f"- overlays: {', '.join(item.get('type', 'overlay') for item in overlays) if overlays else 'none'}",
+        f"- CTA: {cta.get('text', 'none') if cta.get('enabled', True) else 'disabled'}",
+    ])
+
+
+def _modification_summary(before: dict[str, Any], after: dict[str, Any]) -> str:
+    changed: list[str] = []
+    stayed: list[str] = []
+    checks = [
+        ("style", before.get("style", {}).get("name"), after.get("style", {}).get("name")),
+        ("renderer", before.get("renderer"), after.get("renderer")),
+        ("caption system", before.get("caption_system", {}).get("type"), after.get("caption_system", {}).get("type")),
+        ("intro", before.get("intro_card", {}).get("headline"), after.get("intro_card", {}).get("headline")),
+        ("transitions", [item.get("type") for item in before.get("transitions", [])], [item.get("type") for item in after.get("transitions", [])]),
+        ("overlays", [item.get("type") for item in before.get("overlays", [])], [item.get("type") for item in after.get("overlays", [])]),
+        ("CTA", before.get("cta", {}).get("text"), after.get("cta", {}).get("text")),
+    ]
+    for label, old, new_value in checks:
+        if old != new_value:
+            changed.append(f"- {label}: {old or 'none'} → {new_value or 'none'}")
+        else:
+            stayed.append(f"- {label}: {new_value or 'none'}")
+    return "\n".join([
+        "Step 4 complete: Recipe updated.",
+        "",
+        "What changed:",
+        *(changed or ["- No major recipe fields changed; your direction was saved for the next analysis/render."]),
+        "",
+        "What stayed the same:",
+        *(stayed[:5] or ["- Core Hamsa Nomads brand structure"]),
+        "",
+        "Next command: /render",
+    ])
+
+
+async def unknown_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    await update.effective_message.reply_text(unknown_command_text())
 
 
 def _state(context: ContextTypes.DEFAULT_TYPE) -> dict[str, Any]:
@@ -116,46 +190,46 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
 
 async def auto(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     _state(context)["transcription_mode"] = "auto"
-    await update.effective_message.reply_text("Automatic Whisper transcription enabled.")
+    await update.effective_message.reply_text("Step 2 setup: Automatic Whisper transcription enabled. Next: send video, then /analyze.")
 
 
 async def transcript_mode(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     _state(context)["transcription_mode"] = "manual"
-    await update.effective_message.reply_text("Manual transcript mode enabled. Send transcript text next.")
+    await update.effective_message.reply_text("Step 2 setup: Manual transcript mode enabled. Send transcript text next, then /analyze or /render.")
 
 
 async def set_ffmpeg(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     state = _state(context)
     state["renderer"] = "ffmpeg"
     state["transitions"] = False
-    await update.effective_message.reply_text("Renderer set to FFmpeg fast mode.")
+    await update.effective_message.reply_text("Step 5 setup: FFmpeg reliable fast mode selected. Next: /analyze or /render.")
 
 
 async def set_remotion(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     state = _state(context)
     state["renderer"] = "remotion"
     state["transitions"] = True
-    await update.effective_message.reply_text("Renderer set to Remotion premium mode. Run install_windows.bat and choose Remotion install if needed.")
+    await update.effective_message.reply_text("Step 5 setup: Remotion premium animated mode selected. Run install_windows.bat and choose Remotion install if needed. Next: /analyze or /render.")
 
 
 async def autocut_on(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     _state(context)["autocut"] = True
-    await update.effective_message.reply_text("Auto-cut enabled: long pauses >0.7s are planned for compression to 0.25s.")
+    await update.effective_message.reply_text("Step 2 setup: Auto-cut is on. I will cut dead pauses during analysis. Next: /analyze.")
 
 
 async def autocut_off(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     _state(context)["autocut"] = False
-    await update.effective_message.reply_text("Auto-cut disabled.")
+    await update.effective_message.reply_text("Step 2 setup: Auto-cut is off. I will preserve the natural pacing. Next: /analyze.")
 
 
 async def transitions_on(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     _state(context)["transitions"] = True
-    await update.effective_message.reply_text("Transitions enabled. Remotion uses premium transitions; FFmpeg keeps them simple.")
+    await update.effective_message.reply_text("Step 3 setup: Transitions enabled. I will include them in the recipe when they fit the content.")
 
 
 async def transitions_off(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     _state(context)["transitions"] = False
-    await update.effective_message.reply_text("Transitions disabled.")
+    await update.effective_message.reply_text("Step 3 setup: Transitions disabled. The recipe will avoid transition overlays.")
 
 
 def _session_dir(user_id: int) -> Path:
@@ -174,7 +248,7 @@ async def new_project(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
     session_dir = _session_dir(user_id)
     session_dir.mkdir(parents=True, exist_ok=True)
     state["session_dir"] = str(session_dir)
-    await update.effective_message.reply_text("New Hamsa Nomads project started. Send one or more videos, then /analyze.")
+    await update.effective_message.reply_text("Step 1 started: New Hamsa Nomads project created. Upload one or more videos.")
 
 
 async def clear(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -182,20 +256,20 @@ async def clear(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 
 
 async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    await update.effective_message.reply_text("Current operation cancelled. Send /new_project to start over or /videos to inspect current clips.")
+    await update.effective_message.reply_text("Step status: Current operation cancelled. Send /new_project to restart Step 1, or /videos to inspect uploaded clips.")
 
 
 async def add_video(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    await update.effective_message.reply_text("Send one or more MP4/MOV/M4V files. I will save them into the current session.")
+    await update.effective_message.reply_text("Step 1 — Upload video. Send one or more MP4/MOV/M4V files now.")
 
 
 async def videos(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     state = _state(context)
     current = state.get("videos", [])
     if not current:
-        await update.effective_message.reply_text("No videos in this session yet. Send a video, or use /new_project first.")
+        await update.effective_message.reply_text("Step 1 — Upload video. No videos in this session yet. Send a video, or use /new_project first.")
         return
-    lines = ["Current session videos:"]
+    lines = ["Step 1 — Current session videos:"]
     for index, path in enumerate(current, start=1):
         video = Path(path)
         size = _format_bytes(_path_size(video) or 0) if video.exists() else "missing"
@@ -205,17 +279,17 @@ async def videos(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 
 async def visual_none(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     _state(context)["visual_ai"] = "none"
-    await update.effective_message.reply_text("Visual AI disabled. Analysis will use transcript, scene metadata, filenames, prompt, and keyframe metadata.")
+    await update.effective_message.reply_text("Step 2 setup: Visual AI disabled. I will analyze transcript, scene metadata, filenames, prompt, and keyframe metadata.")
 
 
 async def visual_smol(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     _state(context)["visual_ai"] = "smolvlm2"
-    await update.effective_message.reply_text("SmolVLM2 selected. If it is not installed, I will continue with transcript-only/fallback visual analysis.")
+    await update.effective_message.reply_text("Step 2 setup: SmolVLM2 selected. If it is not installed, I will continue with transcript-only/fallback visual analysis.")
 
 
 async def visual_qwen(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     _state(context)["visual_ai"] = "qwen2_5_vl"
-    await update.effective_message.reply_text("Qwen2.5-VL selected. If it is not installed, I will continue with transcript-only/fallback visual analysis.")
+    await update.effective_message.reply_text("Step 2 setup: Qwen2.5-VL selected. If it is not installed, I will continue with transcript-only/fallback visual analysis.")
 
 
 async def status(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -324,9 +398,9 @@ async def handle_video(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
     state = _state(context)
     attachment = video_attachment(update)
     if not attachment:
-        await update.effective_message.reply_text("Please send a real MP4, MOV, or M4V video.")
+        await update.effective_message.reply_text("Step 1 — Upload video. Please send a real MP4, MOV, or M4V video.")
         return
-    await update.effective_message.reply_text("Video received. Saving file…")
+    await update.effective_message.reply_text("Step 1 started: Saving your video…")
     INPUT_DIR.mkdir(parents=True, exist_ok=True)
     user_id = update.effective_user.id if update.effective_user else 0
     if not state.get("session_dir"):
@@ -344,7 +418,7 @@ async def handle_video(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
     state.setdefault("videos", []).append(str(video_path))
     state["latest_video"] = str(video_path)
     state.pop("recipe", None)
-    await update.effective_message.reply_text(f"File saved. Send more videos, or send /analyze. Session now has {len(state['videos'])} video(s).")
+    await update.effective_message.reply_text("Step 1 complete: Video received.\nSend more videos, or send /analyze to continue.")
 
 
 def _current_recipe(state: dict[str, Any]) -> dict[str, Any]:
@@ -369,7 +443,7 @@ async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
         transcript_path.write_text(text + "\n", encoding="utf-8")
         state["transcript_path"] = str(transcript_path)
         state["transcription_mode"] = "manual_ready"
-        await update.effective_message.reply_text("Transcript saved. Send /render to render, or send a prompt to update style first.")
+        await update.effective_message.reply_text("Step 2 setup: Transcript saved. Next send /analyze to build the recipe, or /render if the recipe is already ready.")
         return
     state["prompt"] = text
     base = _current_recipe(state) if state.get("recipe") else recipe_from_prompt(text, input_video=state.get("latest_video", ""), renderer=state["renderer"], style=state["style"])
@@ -380,21 +454,31 @@ async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
     state["recipe"] = recipe
     path = save_recipe(recipe, OUTPUT_DIR / "edit_recipe.json")
     state["recipe_path"] = str(path)
-    await update.effective_message.reply_text(recipe_summary(recipe) + "\n\nSend /render to render, or /modify to change it.")
+    await update.effective_message.reply_text("Step 4 draft: Direction saved to the recipe.\n" + recipe_summary(recipe) + "\n\nNext: send /analyze to rebuild from content, /recipe to review, or /render to render.")
 
 
 async def analyze_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     state = _state(context)
     video_paths = state.get("videos") or ([state["latest_video"]] if state.get("latest_video") else [])
     if not video_paths:
-        await update.effective_message.reply_text("I need a video first. Send one or more MP4/MOV/M4V videos.")
+        await update.effective_message.reply_text("Step 1 required: I need a video first. Send one or more MP4/MOV/M4V videos.")
         return
 
     def progress(message: str) -> None:
         _append_bot_log([f"timestamp: {datetime.now().isoformat()}", f"analysis progress: {message}"])
 
-    for message in ["Normalizing video", "Transcribing", "Detecting scenes", "Extracting keyframes", "Running visual analysis", "Building edit plan"]:
-        await update.effective_message.reply_text(message + "…")
+    await update.effective_message.reply_text(
+        "Step 2 started: I’m analyzing your video.\n"
+        "I’ll transcribe the speech, detect cuts, and build a Hamsa Nomads edit recipe."
+    )
+    for message in [
+        "Step 2.1: Normalizing video…",
+        "Step 2.2: Transcribing speech…",
+        "Step 2.3: Building speech-locked captions…",
+        "Step 2.4: Creating cut plan…",
+        "Step 2.5: Choosing Hamsa-style overlays and transitions…",
+    ]:
+        await update.effective_message.reply_text(message)
     try:
         result = await asyncio.wait_for(
             asyncio.to_thread(
@@ -411,14 +495,14 @@ async def analyze_command(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
             timeout=600,
         )
     except TimeoutError:
-        await update.effective_message.reply_text("Analysis timed out after 10 minutes. Try fewer/shorter clips or /visual_none.")
+        await update.effective_message.reply_text("Step 2 warning: Analysis timed out after 10 minutes. Try fewer/shorter clips or /visual_none.")
         return
     state["analysis"] = result["content_analysis"]
     state["recipe"] = result["recipe"]
     state["recipe_path"] = str(result["recipe_path"])
     state["renderer"] = result["recipe"].get("renderer", state.get("renderer", "ffmpeg"))
     state["style"] = result["recipe"].get("style", {}).get("name", state.get("style", "hamsa-clean"))
-    await update.effective_message.reply_text("Recipe ready.")
+    await update.effective_message.reply_text("Step 2 complete: Analysis ready.")
     analysis = result["content_analysis"]
     overlays = analysis.get("recommended_overlays", [])
     summary = "\n".join([
@@ -430,17 +514,19 @@ async def analyze_command(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
         f"- Overlays: {', '.join(o.get('type', 'overlay') for o in overlays) if overlays else 'none'}",
         f"- CTA: {analysis.get('recommended_cta', '')}",
         *(f"- Warning: {warning}" for warning in analysis.get("warnings", [])),
-        "",
-        "Send /recipe to inspect, /modify to change, or /render to render.",
     ])
     await update.effective_message.reply_text(summary)
+    await update.effective_message.reply_text(
+        "Step 3: Review the edit direction.\n"
+        "Send /recipe to inspect the plan, /modify to change it, or /render to create the video."
+    )
 
 
 async def style_and_render(update: Update, context: ContextTypes.DEFAULT_TYPE, style: str) -> None:
     state = _state(context)
     state["style"] = style
     state["recipe"] = _current_recipe(state)
-    await update.effective_message.reply_text(f"Style set to {style}. Send /analyze to rebuild the content-aware recipe, or /render if a recipe already exists.")
+    await update.effective_message.reply_text(f"Step 3 setup: Style set to {style}. Send /analyze to rebuild the content-aware recipe, or /render if a recipe already exists.")
 
 
 async def game(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -457,7 +543,7 @@ async def clean(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 
 async def recipe_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     recipe = _current_recipe(_state(context))
-    await update.effective_message.reply_text(recipe_summary(recipe))
+    await update.effective_message.reply_text(_recipe_review_text(recipe))
 
 
 def _render_command_for_state(state: dict[str, Any], recipe_path: Path) -> list[str]:
@@ -569,10 +655,10 @@ async def _send_video_with_document_fallback(update: Update, final: Path, upload
         return True
     except TimedOut as exc:
         _log_upload_event("upload_failure", upload_file=upload_file, upload_file_size=_format_bytes(upload_size), upload_type="video", error=repr(exc))
-        await message.reply_text(f"Render complete, but Telegram upload timed out. The file was saved locally at: {final.relative_to(ROOT)}")
+        await message.reply_text(f"Step 6 warning: The video rendered successfully, but Telegram upload timed out.\nYour file is saved locally at: {final.relative_to(ROOT)}")
     except TelegramError as exc:
         _log_upload_event("upload_failure", upload_file=upload_file, upload_file_size=_format_bytes(upload_size), upload_type="video", error=repr(exc))
-        await message.reply_text(f"Render complete, but Telegram video upload failed. The file was saved locally at: {final.relative_to(ROOT)}")
+        await message.reply_text(f"Step 6 warning: The video rendered successfully, but Telegram upload failed.\nYour file is saved locally at: {final.relative_to(ROOT)}")
 
     _log_upload_event("fallback_attempt_started", upload_file=upload_file, upload_file_size=_format_bytes(upload_size), upload_type="document")
     try:
@@ -582,7 +668,7 @@ async def _send_video_with_document_fallback(update: Update, final: Path, upload
         return True
     except TelegramError as exc:
         _log_upload_event("fallback_attempt_failure", upload_file=upload_file, upload_file_size=_format_bytes(upload_size), upload_type="document", error=repr(exc))
-        await message.reply_text(f"Telegram upload failed, but the video exists locally at {final.relative_to(ROOT)}.")
+        await message.reply_text(f"Step 6 warning: The video rendered successfully, but Telegram upload failed.\nYour file is saved locally at: {final.relative_to(ROOT)}")
         return False
 
 
@@ -607,39 +693,41 @@ async def _send_render_artifacts(update: Update, thumb: Path, out_recipe: Path) 
 async def render_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     state = _state(context)
     if not state.get("latest_video"):
-        await update.effective_message.reply_text("I need a video first. Send an MP4 video.")
+        await update.effective_message.reply_text("Step 1 required: I need a video first. Send an MP4/MOV video, then /analyze, then /render.")
         return
     async with RENDER_LOCK:
         recipe = _current_recipe(state)
         recipe_path = save_recipe(recipe, OUTPUT_DIR / "edit_recipe.json")
         cmd = _render_command_for_state(state, recipe_path)
-        await update.effective_message.reply_text("Rendering…")
+        await update.effective_message.reply_text("Step 5 started: Rendering your final video.")
+        await update.effective_message.reply_text("Step 5.1: Preparing timeline…")
+        await update.effective_message.reply_text("Step 5.2: Applying captions…")
+        await update.effective_message.reply_text("Step 5.3: Applying transitions…")
+        await update.effective_message.reply_text("Step 5.4: Rendering final video…")
         render_timeout = 900 if state.get("renderer") == "remotion" else 600
         try:
             proc = subprocess.run(cmd, cwd=str(ROOT), capture_output=True, text=True, timeout=render_timeout)
         except subprocess.TimeoutExpired as exc:
             _write_render_log(state, cmd, None, recipe_path)
-            await update.effective_message.reply_text(f"Render timed out after {render_timeout // 60} minutes. This is a render timeout, not an upload failure.")
+            await update.effective_message.reply_text(f"Step 5 warning: Render timed out after {render_timeout // 60} minutes. This is a render timeout, not an upload failure.")
             return
         _write_render_log(state, cmd, proc, recipe_path)
         if proc.returncode != 0:
-            await update.effective_message.reply_text("Render failed. Full logs were saved to logs/bot_render.log.\n\nLast useful error:\n" + _last_useful_error((proc.stdout or "") + "\n" + (proc.stderr or "")))
+            await update.effective_message.reply_text("Step 5 failed: Render failed. Full logs were saved to logs/bot_render.log.\n\nLast useful error:\n" + _last_useful_error((proc.stdout or "") + "\n" + (proc.stderr or "")))
             return
         final = OUTPUT_DIR / "final_video.mp4"
         thumb = OUTPUT_DIR / "thumbnail.jpg"
         out_recipe = OUTPUT_DIR / "edit_recipe.json"
         if not final.exists():
-            await update.effective_message.reply_text("Render finished, but output/final_video.mp4 was not found. Full logs were saved to logs/bot_render.log.")
+            await update.effective_message.reply_text("Step 5 failed: Render finished, but output/final_video.mp4 was not found. Full logs were saved to logs/bot_render.log.")
             return
         final_size = _path_size(final) or 0
         _log_upload_event("render_complete", final_video=final, final_video_size=_format_bytes(final_size))
-        await update.effective_message.reply_text("Render complete.")
-        await update.effective_message.reply_text("Compressing Telegram copy…")
-        await update.effective_message.reply_text("Preparing Telegram-friendly video...")
+        await update.effective_message.reply_text("Step 5.5: Compressing Telegram copy…")
         try:
             telegram_copy = await asyncio.to_thread(_make_telegram_video_copy, final)
         except RuntimeError as exc:
-            await update.effective_message.reply_text(f"Render complete, but Telegram-friendly compression failed. The file was saved locally at: {final.relative_to(ROOT)}\n{exc}")
+            await update.effective_message.reply_text(f"Step 6 warning: The video rendered successfully, but Telegram compression failed.\nYour file is saved locally at: {final.relative_to(ROOT)}\n{exc}")
             _log_upload_event("upload_skipped", reason=repr(exc), final_video=final, final_video_size=_format_bytes(final_size))
             await _send_render_artifacts(update, thumb, out_recipe)
             return
@@ -652,13 +740,13 @@ async def render_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
             telegram_video_size=_format_bytes(telegram_size),
             uploading=telegram_copy,
         )
-        await update.effective_message.reply_text("Uploading video to Telegram...")
+        await update.effective_message.reply_text("Step 6 complete: Your video is ready.\nUploading video to Telegram…")
         video_sent = await _send_video_with_document_fallback(update, final, telegram_copy)
         await _send_render_artifacts(update, thumb, out_recipe)
         if video_sent:
-            await update.effective_message.reply_text("Rendered and sent final_video_telegram.mp4, thumbnail.jpg, and edit_recipe.json. Original saved locally as output/final_video.mp4.\n" + recipe_summary(recipe))
+            await update.effective_message.reply_text("Step 6 complete: Sent final_video_telegram.mp4, thumbnail.jpg, and edit_recipe.json. Original saved locally as output/final_video.mp4.")
         else:
-            await update.effective_message.reply_text("thumbnail.jpg and edit_recipe.json were sent if available. Original video remains saved locally as output/final_video.mp4.\n" + recipe_summary(recipe))
+            await update.effective_message.reply_text("Step 6 warning: thumbnail.jpg and edit_recipe.json were sent if available. Original video remains saved locally as output/final_video.mp4.")
 
 
 async def rerender(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -669,13 +757,19 @@ async def modify(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     state = _state(context)
     prompt = " ".join(context.args) if context.args else ""
     if not prompt:
-        await update.effective_message.reply_text("Use /modify followed by your change prompt.")
+        await update.effective_message.reply_text(
+            "Step 4 — Modify if needed.\n"
+            "Use /modify followed by your change prompt.\n"
+            "Example: /modify make it more premium, speech locked, use black logo, and add route-line transitions"
+        )
         return
+    await update.effective_message.reply_text("Step 4 started: Updating the recipe based on your direction…")
     current = _current_recipe(state)
     MODIFIED_RECIPES_DIR.mkdir(parents=True, exist_ok=True)
     stamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     save_recipe(current, MODIFIED_RECIPES_DIR / f"backup_{stamp}.json")
     modified = apply_prompt_rules(current, prompt)
+    state["prompt"] = prompt
     state["renderer"] = modified["renderer"]
     state["style"] = modified["style"]["name"]
     state["recipe"] = modified
@@ -683,8 +777,7 @@ async def modify(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     state["recipe_path"] = str(modified_path)
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
     (OUTPUT_DIR / "change_summary.txt").write_text(f"Modified recipe with prompt: {prompt}\n{recipe_summary(modified)}\n", encoding="utf-8")
-    await update.effective_message.reply_text("Recipe modified and saved. Rendering again...\n" + recipe_summary(modified))
-    await render_command(update, context)
+    await update.effective_message.reply_text(_modification_summary(current, modified))
 
 
 def main() -> None:
@@ -732,6 +825,7 @@ def main() -> None:
     app.add_handler(CommandHandler("local_output", local_output))
     app.add_handler(CommandHandler("status", status))
     app.add_handler(MessageHandler(filters.VIDEO | filters.Document.VIDEO | filters.Document.ALL, handle_video))
+    app.add_handler(MessageHandler(filters.COMMAND, unknown_command))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_text))
     app.run_polling(allowed_updates=Update.ALL_TYPES)
 
