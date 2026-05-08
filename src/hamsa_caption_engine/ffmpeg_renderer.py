@@ -3,11 +3,12 @@ from __future__ import annotations
 import json
 import math
 import subprocess
+from datetime import datetime
 from pathlib import Path
 from typing import Any
 
 from .content_analysis import analyze_transcript, save_content_analysis
-from .paths import ROOT, find_ffmpeg
+from .paths import LOG_DIR, ROOT, find_ffmpeg
 from .recipe_schema import save_recipe, validate_recipe
 from .transcription import load_manual_transcript, save_transcript, segments_from_transcript_text, transcribe_with_whisper
 
@@ -158,27 +159,136 @@ def _detect_cut_plan(video_path: Path, output_dir: Path, recipe: dict[str, Any],
 
 
 
+
+def _concat_file_line(path: Path) -> str:
+    # FFmpeg concat demuxer accepts forward slashes on Windows and Unix.
+    escaped = path.resolve().as_posix().replace("'", "'\\''")
+    return f"file '{escaped}'"
+
+
+def _append_ffmpeg_failure_log(label: str, cmd: list[str], proc: subprocess.CompletedProcess[str]) -> None:
+    LOG_DIR.mkdir(parents=True, exist_ok=True)
+    lines = [
+        f"timestamp: {datetime.now().isoformat()}",
+        f"ffmpeg step: {label}",
+        f"command: {cmd!r}",
+        f"return code: {proc.returncode}",
+        "stdout:",
+        proc.stdout or "",
+        "stderr:",
+        proc.stderr or "",
+    ]
+    with (LOG_DIR / "bot_render.log").open("a", encoding="utf-8") as handle:
+        handle.write("\n" + "\n".join(lines) + "\n")
+
+
+def _run_ffmpeg_or_raise(label: str, cmd: list[str]) -> None:
+    proc = subprocess.run(cmd, capture_output=True, text=True)
+    if proc.returncode != 0:
+        _append_ffmpeg_failure_log(label, cmd, proc)
+        stderr = (proc.stderr or proc.stdout or "No FFmpeg stderr/stdout captured.").strip()
+        useful = "\n".join(line for line in stderr.splitlines()[-20:] if line.strip())
+        raise RuntimeError(f"FFmpeg failed during {label}:\n{useful}")
+
+
+def _assembly_encode_args(ffmpeg: str, input_args: list[str], assembled: Path) -> list[str]:
+    return [
+        ffmpeg,
+        "-y",
+        *input_args,
+        "-map",
+        "0:v:0",
+        "-map",
+        "0:a?",
+        "-vf",
+        f"scale={VIDEO_W}:{VIDEO_H}:force_original_aspect_ratio=increase,crop={VIDEO_W}:{VIDEO_H}",
+        "-c:v",
+        "libx264",
+        "-preset",
+        "veryfast",
+        "-crf",
+        "23",
+        "-pix_fmt",
+        "yuv420p",
+        "-c:a",
+        "aac",
+        "-b:a",
+        "128k",
+        "-ar",
+        "44100",
+        "-ac",
+        "2",
+        "-movflags",
+        "+faststart",
+        str(assembled.resolve()),
+    ]
+
+
 def _assemble_timeline(ffmpeg: str, recipe: dict[str, Any], output_dir: Path, notes: list[str]) -> Path | None:
     clips = [entry for entry in recipe.get("timeline", []) if entry.get("type", "video_clip") == "video_clip" and entry.get("source")]
     if not clips:
         return None
+    out = output_dir.resolve()
+    segment_dir = out / "timeline_segments"
+    segment_dir.mkdir(parents=True, exist_ok=True)
     segment_paths: list[Path] = []
     for index, clip in enumerate(clips, start=1):
         source = Path(clip["source"])
         if not source.is_absolute():
             source = ROOT / source
+        source = source.resolve()
         start = float(clip.get("source_start_sec", 0.0))
         end = float(clip.get("source_end_sec", start))
         duration = max(0.1, end - start)
-        segment = output_dir / f"timeline_segment_{index:03d}.mp4"
-        cmd = [ffmpeg, "-y", "-ss", f"{start:.2f}", "-i", str(source), "-t", f"{duration:.2f}", "-c:v", "libx264", "-pix_fmt", "yuv420p", "-c:a", "aac", "-ar", "44100", "-ac", "2", str(segment)]
-        subprocess.run(cmd, check=True)
+        segment = (segment_dir / f"segment_{index:03d}.mp4").resolve()
+        cmd = [
+            ffmpeg,
+            "-y",
+            "-ss",
+            f"{start:.2f}",
+            "-i",
+            str(source),
+            "-t",
+            f"{duration:.2f}",
+            "-map",
+            "0:v:0",
+            "-map",
+            "0:a?",
+            "-c:v",
+            "libx264",
+            "-preset",
+            "veryfast",
+            "-crf",
+            "23",
+            "-pix_fmt",
+            "yuv420p",
+            "-c:a",
+            "aac",
+            "-b:a",
+            "128k",
+            "-ar",
+            "44100",
+            "-ac",
+            "2",
+            "-movflags",
+            "+faststart",
+            str(segment),
+        ]
+        _run_ffmpeg_or_raise(f"timeline segment {index:03d}", cmd)
         segment_paths.append(segment)
-    concat_file = output_dir / "timeline_concat.txt"
-    concat_file.write_text("\n".join(f"file '{path.as_posix()}'" for path in segment_paths), encoding="utf-8")
-    assembled = output_dir / "assembly_input.mp4"
-    subprocess.run([ffmpeg, "-y", "-f", "concat", "-safe", "0", "-i", str(concat_file), "-c", "copy", str(assembled)], check=True)
-    notes.append(f"timeline assembly used {len(segment_paths)} content-aware clips")
+
+    assembled = (out / "assembly_input.mp4").resolve()
+    if len(segment_paths) == 1:
+        cmd = _assembly_encode_args(ffmpeg, ["-i", str(segment_paths[0])], assembled)
+        _run_ffmpeg_or_raise("single segment timeline assembly", cmd)
+        notes.append("timeline assembly re-encoded 1 content-aware clip")
+        return assembled
+
+    concat_file = (out / "timeline_concat.txt").resolve()
+    concat_file.write_text("\n".join(_concat_file_line(path) for path in segment_paths) + "\n", encoding="utf-8")
+    cmd = _assembly_encode_args(ffmpeg, ["-f", "concat", "-safe", "0", "-i", str(concat_file)], assembled)
+    _run_ffmpeg_or_raise("concat timeline assembly", cmd)
+    notes.append(f"timeline assembly re-encoded {len(segment_paths)} content-aware clips")
     return assembled
 
 def render_ffmpeg(video_path: str | Path, output_dir: str | Path, recipe: dict[str, Any], *, transcript_path: str | Path | None = None, thumbnail_at: str = "00:00:01", logo_path: str | Path | None = None) -> dict[str, Any]:
