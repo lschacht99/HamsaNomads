@@ -1,0 +1,19 @@
+{
+  "name": "hamsa-nomads-remotion",
+  "version": "0.2.0",
+  "private": true,
+  "scripts": {
+    "render": "node render.mjs"
+  },
+  "dependencies": {
+    "@remotion/cli": "^4.0.279",
+    "@remotion/renderer": "^4.0.279",
+    "remotion": "^4.0.279",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "@remotion/bundler": "^4.0.279"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.0"
+  }
+}
